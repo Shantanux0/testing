@@ -14,8 +14,10 @@ import Profile from "./pages/Profile";
 import Resume from "./pages/Resume";
 import TestPortal from "./pages/TestPortal";
 import Sessions from "./pages/Sessions";
-import FindSwap from "./pages/FindSwap";
+
 import OTP from "./pages/OTP";
+import AboutUs from "./pages/AboutUs";
+import CreateSwap from "./pages/CreateSwap";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -30,6 +32,7 @@ const App = () => (
           <Sonner />
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/about" element={<AboutUs />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/verify" element={<OTP />} />
@@ -58,7 +61,7 @@ const App = () => (
               )}
             />
             <Route
-              path="/tests"
+              path="/test-portal"
               element={(
                 <ProtectedRoute>
                   <TestPortal />
@@ -89,11 +92,12 @@ const App = () => (
                 </ProtectedRoute>
               )}
             />
+
             <Route
-              path="/find-swap"
+              path="/create-swap"
               element={(
                 <ProtectedRoute>
-                  <FindSwap />
+                  <CreateSwap />
                 </ProtectedRoute>
               )}
             />

@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Menu, X, ChevronRight } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -27,43 +28,47 @@ const LandingNav = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
-        ? "bg-white/90 backdrop-blur-md border-b border-white/20 shadow-elevation-1 py-4"
-        : "bg-transparent py-6"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
+        ? "bg-white/80 backdrop-blur-md border-b border-gray-100 py-3"
+        : "bg-transparent py-5"
         }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+      <div className="container-cinematic flex items-center justify-between">
         {/* Logo */}
         <Logo scrolled={scrolled} />
 
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8">
-          <Link to="/" className="text-sm font-medium text-slate-600 hover:text-navy-900 transition-colors relative group">
-            Home
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal-500 transition-all duration-300 group-hover:w-full"></span>
-          </Link>
-          <a href="#features" className="text-sm font-medium text-slate-600 hover:text-navy-900 transition-colors relative group">
-            Features
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal-500 transition-all duration-300 group-hover:w-full"></span>
-          </a>
-          {isAuthenticated && (
-            <Link to="/dashboard" className="text-sm font-medium text-slate-600 hover:text-navy-900 transition-colors relative group">
-              Dashboard
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal-500 transition-all duration-300 group-hover:w-full"></span>
-            </Link>
+        {/* Desktop Links - Conditionally Rendered */}
+        <div className="hidden md:flex items-center gap-10">
+          {isAuthenticated ? (
+            <>
+              <Link to="/create-swap" className="text-xs font-semibold uppercase tracking-widest hover:text-black/60 transition-colors relative group">
+                Create Swap
+                <span className="absolute -bottom-2 left-0 w-0 h-[1px] bg-black transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <Link to="/dashboard" className="text-xs font-semibold uppercase tracking-widest hover:text-black/60 transition-colors relative group">
+                Dashboard
+                <span className="absolute -bottom-2 left-0 w-0 h-[1px] bg-black transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+              <Link to="/about" className="text-xs font-semibold uppercase tracking-widest hover:text-black/60 transition-colors relative group">
+                About Us
+                <span className="absolute -bottom-2 left-0 w-0 h-[1px] bg-black transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+            </>
+          ) : (
+            null /* Middle section is empty for unauthenticated users */
           )}
         </div>
 
         {/* Desktop CTA */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-4">
           {isAuthenticated ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Link to="/profile">
-                <Button variant="ghost" className="rounded-lg text-slate-600 hover:text-navy-900 hover:bg-slate-50">Profile</Button>
+                <Button variant="ghost" className="uppercase text-xs tracking-widest hover:bg-transparent hover:text-black/60">Profile</Button>
               </Link>
               <Button
                 onClick={logout}
-                className="rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm"
+                className="btn-cinematic-outline py-2 px-6 text-xs h-auto rounded-none border-gray-300"
               >
                 Log Out
               </Button>
@@ -71,13 +76,13 @@ const LandingNav = () => {
           ) : (
             <>
               <Link to="/signin">
-                <Button variant="ghost" className="rounded-lg font-medium text-slate-600 hover:text-navy-900 hover:bg-slate-50">
+                <Button variant="ghost" className="uppercase text-xs tracking-widest hover:bg-transparent hover:text-black/60">
                   Log In
                 </Button>
               </Link>
               <Link to="/signup">
-                <Button className="rounded-lg px-6 font-semibold bg-navy-900 text-white shadow-elevation-2 hover:shadow-elevation-3 hover:translate-y-[-2px] transition-all duration-300">
-                  Get Started
+                <Button className="btn-cinematic py-3 px-8 text-xs h-auto rounded-none bg-black text-white hover:bg-black/80">
+                  Join Now
                 </Button>
               </Link>
             </>
@@ -86,7 +91,7 @@ const LandingNav = () => {
 
         {/* Mobile Menu Toggle */}
         <button
-          className="md:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors"
+          className="md:hidden p-2 text-black hover:bg-gray-50 transition-colors"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -98,41 +103,41 @@ const LandingNav = () => {
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
+            animate={{ opacity: 1, height: "100vh" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-b border-slate-100 overflow-hidden shadow-elevation-3"
+            className="md:hidden fixed inset-x-0 top-[var(--nav-height,80px)] bg-white z-40 overflow-hidden"
           >
-            <div className="px-6 py-6 space-y-4">
-              <Link to="/" className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium select-none">
-                Home <ChevronRight className="w-4 h-4 text-slate-300" />
-              </Link>
-              <a href="#features" className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium select-none">
-                Features <ChevronRight className="w-4 h-4 text-slate-300" />
-              </a>
+            <div className="px-6 py-12 space-y-8 flex flex-col items-center text-center">
               {isAuthenticated ? (
                 <>
-                  <Link to="/dashboard" className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium select-none">
-                    Dashboard <ChevronRight className="w-4 h-4 text-slate-300" />
+                  <Link to="/create-swap" className="text-2xl font-serif tracking-tight text-black hover:text-black/60 transition-colors">
+                    Create Swap
                   </Link>
-                  <Link to="/profile" className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 text-slate-700 font-medium select-none">
-                    Profile <ChevronRight className="w-4 h-4 text-slate-300" />
+                  <Link to="/dashboard" className="text-2xl font-serif tracking-tight text-black hover:text-black/60 transition-colors">
+                    Dashboard
                   </Link>
-                  <div className="pt-4">
-                    <Button onClick={logout} className="w-full rounded-xl bg-slate-900 text-white py-6">
+                  <a href="#about" className="text-2xl font-serif tracking-tight text-black hover:text-black/60 transition-colors">
+                    About Us
+                  </a>
+                  <Link to="/profile" className="text-2xl font-serif tracking-tight text-black hover:text-black/60 transition-colors">
+                    Profile
+                  </Link>
+                  <div className="pt-8 w-full max-w-xs">
+                    <Button onClick={logout} className="w-full btn-cinematic-outline rounded-none py-4">
                       Log Out
                     </Button>
                   </div>
                 </>
               ) : (
-                <div className="pt-4 grid gap-3">
+                <div className="pt-8 w-full max-w-xs grid gap-4">
                   <Link to="/signin" className="w-full">
-                    <Button variant="outline" className="w-full rounded-xl border-slate-200 py-6">
+                    <Button variant="outline" className="w-full btn-cinematic-outline rounded-none py-4 border-gray-200">
                       Log In
                     </Button>
                   </Link>
                   <Link to="/signup" className="w-full">
-                    <Button className="w-full rounded-xl bg-navy-900 text-white py-6 shadow-lg">
-                      Get Started
+                    <Button className="w-full btn-cinematic rounded-none py-4">
+                      Join The Community
                     </Button>
                   </Link>
                 </div>

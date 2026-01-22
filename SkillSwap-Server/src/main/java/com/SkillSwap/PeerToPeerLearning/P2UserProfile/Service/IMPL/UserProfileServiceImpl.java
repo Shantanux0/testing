@@ -27,13 +27,20 @@ public class UserProfileServiceImpl implements UserProfileService {
     private UserAuthRepo userAuthRepository;
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public UserProfileResponseDto getProfileByEmail(String email) {
         UserAuthEntity user = userAuthRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         UserProfileEntity profile = profileRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Profile not found"));
+                .orElseGet(() -> {
+                    // Create default profile if not found
+                    UserProfileEntity newProfile = new UserProfileEntity();
+                    newProfile.setUser(user);
+                    newProfile.setFirstName("New");
+                    newProfile.setLastName("User");
+                    return profileRepository.save(newProfile);
+                });
 
         return mapToResponseDto(profile);
     }

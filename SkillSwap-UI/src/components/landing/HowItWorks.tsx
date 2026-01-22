@@ -26,55 +26,67 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section className="py-24 px-4 relative">
-      <div className="max-w-6xl mx-auto">
+    <section className="py-32 px-4 relative bg-background border-t border-gray-100 overflow-hidden">
+      <div className="container-cinematic relative z-10">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-center mb-24"
         >
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
-            How <span className="gradient-text">SkillSwap</span> Works
+          <h2 className="font-serif text-5xl md:text-6xl mb-6 tracking-tighter">
+            The Process
           </h2>
-          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Four simple steps to start exchanging skills with peers
+          <p className="text-xl text-muted-foreground font-light max-w-xl mx-auto">
+            A seamless path from curiosity to mastery.
           </p>
         </motion.div>
 
         {/* Steps */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative">
+
           {steps.map((step, index) => (
             <motion.div
               key={step.title}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative group"
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.8, delay: index * 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="relative group flex flex-col items-center text-center"
             >
-              {/* Connector Line */}
+              {/* Connector Line (Desktop) */}
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-12 left-1/2 w-full h-px bg-gradient-to-r from-teal-200 to-transparent" />
+                <motion.div
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 0.5 + (index * 0.2), ease: "easeOut" }}
+                  className="hidden lg:block absolute top-10 left-1/2 w-full h-[1px] bg-gray-200 -z-10 origin-left"
+                />
               )}
 
-              <div className="p-6 text-center h-full bg-white rounded-2xl border border-slate-100 shadow-elevation-1 hover:shadow-elevation-3 hover:-translate-y-1 transition-all duration-300 z-10 relative">
-                {/* Step Number */}
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-navy-900 border-2 border-white flex items-center justify-center text-sm font-bold text-white shadow-md z-20 group-hover:scale-110 transition-transform">
-                  {index + 1}
-                </div>
+              {/* Step Number Badge */}
+              <motion.div
+                whileHover={{ scale: 1.1, backgroundColor: "#000", borderColor: "#000", color: "#fff" }}
+                transition={{ duration: 0.3 }}
+                className="w-20 h-20 rounded-full bg-white border border-gray-200 flex items-center justify-center text-2xl font-serif mb-8 transition-colors duration-500 relative z-10 cursor-default"
+              >
+                {index + 1}
+              </motion.div>
 
-                {/* Icon */}
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-teal-50 flex items-center justify-center group-hover:bg-teal-100 transition-colors duration-300">
-                  <step.icon className="w-8 h-8 text-teal-600 group-hover:rotate-12 transition-transform duration-300" />
-                </div>
+              {/* Icon - Minimalist */}
+              <motion.div
+                className="mb-6 opacity-60 group-hover:opacity-100 transition-opacity duration-300"
+                whileHover={{ y: -5 }}
+              >
+                <step.icon className="w-8 h-8" />
+              </motion.div>
 
-                {/* Content */}
-                <h3 className="font-display text-lg font-bold mb-2 text-navy-900">{step.title}</h3>
-                <p className="text-slate-600 text-sm leading-relaxed">{step.description}</p>
-              </div>
+              {/* Content */}
+              <h3 className="font-serif text-2xl mb-4 tracking-tight">{step.title}</h3>
+              <p className="text-muted-foreground font-light leading-relaxed max-w-xs">{step.description}</p>
             </motion.div>
           ))}
         </div>

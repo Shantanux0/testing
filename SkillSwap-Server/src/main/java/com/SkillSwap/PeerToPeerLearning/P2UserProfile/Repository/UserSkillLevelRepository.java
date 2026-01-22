@@ -16,6 +16,12 @@ public interface UserSkillLevelRepository extends JpaRepository<UserSkillLevel, 
     List<UserSkillLevel> findByUserId(Long userId);
 
     /**
+     * Find a specific skill level for a user and skill combination (Case
+     * Insensitive)
+     */
+    Optional<UserSkillLevel> findByUserIdAndSkillNameIgnoreCase(Long userId, String skillName);
+
+    /**
      * Find a specific skill level for a user and skill combination
      */
     Optional<UserSkillLevel> findByUserIdAndSkillName(Long userId, String skillName);

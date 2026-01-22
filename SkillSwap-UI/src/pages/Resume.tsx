@@ -4,38 +4,22 @@ import { resumeApi, Education, Experience, Certification, CodingStat } from "@/l
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Plus, Trash2, Edit2, GraduationCap, Briefcase, Award, Code, Trophy, ExternalLink } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Plus, Trash2, Edit2, GraduationCap, Briefcase, Award, Code, ExternalLink, Download } from "lucide-react";
+import { motion } from "framer-motion";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Resume = () => {
-  // State Managment (Kept same as original)
+  // State
   const [education, setEducation] = useState<Education[]>([]);
   const [experience, setExperience] = useState<Experience[]>([]);
   const [certifications, setCertifications] = useState<Certification[]>([]);
   const [codingStats, setCodingStats] = useState<CodingStat[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Dialog States
-  const [eduOpen, setEduOpen] = useState(false);
-  const [expOpen, setExpOpen] = useState(false);
-  const [certOpen, setCertOpen] = useState(false);
-  const [codeOpen, setCodeOpen] = useState(false);
-
-  // Edit States
-  const [editEdu, setEditEdu] = useState<Education | null>(null);
-  const [editExp, setEditExp] = useState<Experience | null>(null);
-  const [editCert, setEditCert] = useState<Certification | null>(null);
-  const [editCode, setEditCode] = useState<CodingStat | null>(null);
+  // Dialogs
+  const [activeDialog, setActiveDialog] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<any>(null);
 
   useEffect(() => { loadData(); }, []);
 
@@ -53,13 +37,12 @@ const Resume = () => {
     finally { setLoading(false); }
   };
 
-  // Generic Handlers (Simplified for brevity in this rewrite, logic remains same)
-  const handleSave = async (apiFunc: any, data: any, refreshSet: any, setOpen: any, setEdit: any, type: string) => {
+  const handleSave = async (apiFunc: any, data: any, refreshSet: any, type: string) => {
     try {
       await apiFunc(data);
-      toast.success(`${type} saved!`);
+      toast.success(`${type} saved`);
       loadData();
-      setOpen(false); setEdit(null);
+      setActiveDialog(null); setEditingItem(null);
     } catch (e: any) { toast.error(e.message || "Error saving"); }
   };
 
@@ -69,311 +52,260 @@ const Resume = () => {
     catch (e: any) { toast.error("Delete failed"); }
   };
 
-  // --- Cinematic UI Components ---
-
-  const GlassCard = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`bg-white/80 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl p-6 relative overflow-hidden group hover:shadow-2xl hover:bg-white/90 transition-all duration-300 ${className}`}
-    >
-      <div className="absolute top-0 right-0 p-12 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-indigo-500/10 transition-colors" />
-      <div className="relative z-10">{children}</div>
-    </motion.div>
-  );
-
-  const SectionHeader = ({ title, desc, icon: Icon, onAdd }: any) => (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
-          <Icon className="w-6 h-6" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
-          <p className="text-slate-500">{desc}</p>
-        </div>
-      </div>
-      <Button onClick={onAdd} className="rounded-xl shadow-lg shadow-indigo-500/20 bg-indigo-600 hover:bg-indigo-700 text-white px-6">
-        <Plus className="w-5 h-5 mr-2" /> Add New
-      </Button>
-    </div>
-  );
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+  };
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-slate-50/50">
-        <div className="max-w-6xl mx-auto p-8 lg:p-12 space-y-12">
+      <div className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white">
+        <div className="max-w-5xl mx-auto p-8 lg:p-20">
 
           {/* Header */}
-          <div className="text-center space-y-4 mb-16">
-            <h1 className="text-5xl font-display font-bold text-slate-900 tracking-tight">
-              Build Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Pro Profile</span>
-            </h1>
-            <p className="text-xl text-slate-500 max-w-2xl mx-auto">
-              Your digital resume is your key to unlocking better swaps and teaching opportunities. Make it shine.
-            </p>
+          <div className="flex justify-between items-end mb-24 border-b border-black pb-8">
+            <div>
+              <motion.h1
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="font-serif text-6xl md:text-8xl font-bold tracking-tight mb-4"
+              >
+                Resume
+              </motion.h1>
+              <p className="text-gray-500 uppercase tracking-widest text-xs">Curated Professional History</p>
+            </div>
+            <Button variant="outline" className="hidden md:flex gap-2 rounded-none border-black hover:bg-black hover:text-white transition-colors uppercase tracking-widest text-xs h-12 px-6">
+              <Download className="w-4 h-4" /> Export PDF
+            </Button>
           </div>
 
-          <Tabs defaultValue="education" className="space-y-12">
-            <div className="flex justify-center">
-              <TabsList className="bg-white/80 backdrop-blur-md border border-slate-200 p-1 rounded-full shadow-lg">
-                {[
-                  { id: "education", icon: GraduationCap, label: "Education" },
-                  { id: "experience", icon: Briefcase, label: "Experience" },
-                  { id: "certifications", icon: Award, label: "Certifications" },
-                  { id: "coding", icon: Code, label: "Coding Stats" },
-                ].map((tab) => (
-                  <TabsTrigger
-                    key={tab.id}
-                    value={tab.id}
-                    className="rounded-full px-6 py-3 data-[state=active]:bg-slate-900 data-[state=active]:text-white transition-all"
-                  >
-                    <tab.icon className="w-4 h-4 mr-2" />
-                    {tab.label}
-                  </TabsTrigger>
+          <div className="space-y-24">
+
+            {/* EXPERIENCE */}
+            <motion.section initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
+              <div className="flex items-center justify-between mb-12">
+                <h2 className="font-serif text-3xl font-bold flex items-center gap-4">
+                  <span className="w-8 h-[1px] bg-black"></span> Experience
+                </h2>
+                <Button onClick={() => { setEditingItem(null); setActiveDialog('experience'); }} variant="ghost" className="hover:bg-black hover:text-white rounded-full w-10 h-10 p-0"><Plus className="w-5 h-5" /></Button>
+              </div>
+              <div className="space-y-0 border-l border-black/10 ml-4 pl-12 relative">
+                {experience.map((item, i) => (
+                  <div key={item.id} className="relative pb-16 last:pb-0 group">
+                    <div className="absolute -left-[53px] top-2 w-3 h-3 bg-white border-2 border-black rounded-full group-hover:bg-black transition-colors" />
+                    <div className="grid md:grid-cols-[1fr_200px] gap-8">
+                      <div>
+                        <h3 className="text-2xl font-bold mb-1 group-hover:text-gray-600 transition-colors">{item.jobTitle}</h3>
+                        <div className="text-lg font-serif italic text-gray-500 mb-4">{item.companyName}</div>
+                        <p className="text-gray-600 leading-relaxed max-w-2xl">{item.description || `Specialized in ${item.skillName}`}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-bold mb-2">{item.startDate} — {item.endDate || "Present"}</div>
+                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button variant="ghost" size="sm" onClick={() => { setEditingItem(item); setActiveDialog('experience'); }}>Edit</Button>
+                          <Button variant="ghost" size="sm" className="text-red-500" onClick={() => handleDelete(resumeApi.deleteExperience, item.id!)}>Delete</Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </TabsList>
-            </div>
+                {experience.length === 0 && <div className="text-gray-400 italic">No experience added yet.</div>}
+              </div>
+            </motion.section>
 
-            {/* Content Area */}
-            <div className="min-h-[400px]">
+            {/* EDUCATION */}
+            <motion.section initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
+              <div className="flex items-center justify-between mb-12">
+                <h2 className="font-serif text-3xl font-bold flex items-center gap-4">
+                  <span className="w-8 h-[1px] bg-black"></span> Education
+                </h2>
+                <Button onClick={() => { setEditingItem(null); setActiveDialog('education'); }} variant="ghost" className="hover:bg-black hover:text-white rounded-full w-10 h-10 p-0"><Plus className="w-5 h-5" /></Button>
+              </div>
+              <div className="grid md:grid-cols-2 gap-8">
+                {education.map((item) => (
+                  <div key={item.id} className="p-8 border border-gray-100 hover:border-black transition-colors duration-300 group relative">
+                    <div className="text-xs uppercase tracking-widest text-gray-500 mb-2">{item.passingYear}</div>
+                    <h3 className="text-xl font-bold mb-1">{item.educationLevel}</h3>
+                    <div className="font-serif italic text-gray-600 mb-4">{item.institutionName}</div>
+                    <div className="text-sm text-gray-500">{item.scoreDetails}</div>
 
-              {/* EDUCATION TAB */}
-              <TabsContent value="education" className="space-y-6">
-                <SectionHeader
-                  title="Education"
-                  desc="Your academic journey"
-                  icon={GraduationCap}
-                  onAdd={() => { setEditEdu(null); setEduOpen(true); }}
-                />
-                <div className="grid md:grid-cols-2 gap-6">
-                  {education.map((item) => (
-                    <GlassCard key={item.id}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-xl font-bold text-slate-900">{item.educationLevel}</h3>
-                          <p className="text-indigo-600 font-medium">{item.institutionName}</p>
-                          <p className="text-sm text-slate-500 mt-1">{item.passingYear} • {item.scoreDetails}</p>
-                        </div>
-                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button size="icon" variant="ghost" onClick={() => { setEditEdu(item); setEduOpen(true); }}><Edit2 className="w-4 h-4" /></Button>
-                          <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(resumeApi.deleteEducation, item.id!)}><Trash2 className="w-4 h-4" /></Button>
-                        </div>
-                      </div>
-                      {item.proofUrl && (
-                        <a href={item.proofUrl} target="_blank" className="inline-flex items-center text-xs font-medium text-slate-400 hover:text-indigo-500 mt-4 transition-colors">
-                          <ExternalLink className="w-3 h-3 mr-1" /> View Credential
-                        </a>
-                      )}
-                    </GlassCard>
-                  ))}
-                  {education.length === 0 && <EmptyState icon={GraduationCap} text="Add your first degree" />}
+                    <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditingItem(item); setActiveDialog('education'); }}><Edit2 className="w-3 h-3" /></Button>
+                      <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500" onClick={() => handleDelete(resumeApi.deleteEducation, item.id!)}><Trash2 className="w-3 h-3" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.section>
+
+            {/* CERTIFICATIONS & STATS */}
+            <div className="grid md:grid-cols-2 gap-16">
+              <motion.section initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="font-serif text-2xl font-bold">Certifications</h2>
+                  <Button onClick={() => { setEditingItem(null); setActiveDialog('certification'); }} variant="ghost" size="sm"><Plus className="w-4 h-4" /></Button>
                 </div>
-              </TabsContent>
-
-              {/* EXPERIENCE TAB */}
-              <TabsContent value="experience" className="space-y-6">
-                <SectionHeader
-                  title="Experience"
-                  desc="Your professional career"
-                  icon={Briefcase}
-                  onAdd={() => { setEditExp(null); setExpOpen(true); }}
-                />
                 <div className="space-y-4">
-                  {/* List View for Experience usually better */}
-                  {experience.map((item) => (
-                    <GlassCard key={item.id} className="flex items-center gap-6">
-                      <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xl flex-shrink-0">
-                        {item.companyName.charAt(0)}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold text-slate-900">{item.jobTitle}</h3>
-                        <p className="text-slate-600">{item.companyName}</p>
-                        <div className="flex gap-4 mt-2 text-sm text-slate-500">
-                          <span>{item.startDate} — {item.endDate || "Present"}</span>
-                          <span className="bg-slate-100 px-2 rounded text-slate-600">{item.skillName}</span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="icon" variant="ghost" onClick={() => { setEditExp(item); setExpOpen(true); }}><Edit2 className="w-4 h-4" /></Button>
-                        <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(resumeApi.deleteExperience, item.id!)}><Trash2 className="w-4 h-4" /></Button>
-                      </div>
-                    </GlassCard>
-                  ))}
-                  {experience.length === 0 && <EmptyState icon={Briefcase} text="Add work experience" />}
-                </div>
-              </TabsContent>
-
-              {/* CERTIFICATIONS TAB */}
-              <TabsContent value="certifications" className="space-y-6">
-                <SectionHeader
-                  title="Certifications"
-                  desc="Verified achievements"
-                  icon={Award}
-                  onAdd={() => { setEditCert(null); setCertOpen(true); }}
-                />
-                <div className="grid md:grid-cols-2 gap-6">
                   {certifications.map((item) => (
-                    <GlassCard key={item.id} className="border-l-4 border-l-emerald-500">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-lg font-bold text-slate-900">{item.certificationName}</h3>
-                          <p className="text-emerald-600 font-medium text-sm">{item.issuingOrganization}</p>
-                          <p className="text-xs text-slate-400 mt-2">Issued: {item.issueDate}</p>
-                        </div>
-                        <Award className="w-8 h-8 text-emerald-100" />
+                    <div key={item.id} className="flex justify-between items-center py-4 border-b border-gray-100 group">
+                      <div>
+                        <div className="font-bold">{item.certificationName}</div>
+                        <div className="text-sm text-gray-500">{item.issuingOrganization}</div>
                       </div>
-                      <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditCert(item); setCertOpen(true); }}><Edit2 className="w-3 h-3" /></Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(resumeApi.deleteCertification, item.id!)}><Trash2 className="w-3 h-3" /></Button>
+                      <div className="flex items-center gap-4">
+                        <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 h-8 w-8" onClick={() => { setEditingItem(item); setActiveDialog('certification'); }}><Edit2 className="w-3 h-3" /></Button>
+                        {item.proofUrl && <a href={item.proofUrl} target="_blank"><ExternalLink className="w-4 h-4" /></a>}
                       </div>
-                    </GlassCard>
+                    </div>
                   ))}
-                  {certifications.length === 0 && <EmptyState icon={Award} text="Add certifications" />}
                 </div>
-              </TabsContent>
+              </motion.section>
 
-              {/* CODING STATS TAB */}
-              <TabsContent value="coding" className="space-y-6">
-                <SectionHeader
-                  title="Coding Stats"
-                  desc="Problem solving metrics"
-                  icon={Code}
-                  onAdd={() => { setEditCode(null); setCodeOpen(true); }}
-                />
-                <div className="grid md:grid-cols-3 gap-6">
-                  {codingStats.map((item) => (
-                    <GlassCard key={item.id} className="text-center">
-                      <div className="mx-auto w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-                        <Code className="w-6 h-6 text-slate-600" />
-                      </div>
-                      <h3 className="font-bold text-lg">{item.platformName}</h3>
-                      <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
-                        <div className="bg-green-50 p-2 rounded text-green-700">
-                          <div className="font-bold">{item.easySolved}</div>
-                          <div>Easy</div>
-                        </div>
-                        <div className="bg-yellow-50 p-2 rounded text-yellow-700">
-                          <div className="font-bold">{item.mediumSolved}</div>
-                          <div>Med</div>
-                        </div>
-                        <div className="bg-red-50 p-2 rounded text-red-700">
-                          <div className="font-bold">{item.hardSolved}</div>
-                          <div>Hard</div>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-slate-100 flex justify-center gap-2">
-                        <Button size="sm" variant="ghost" onClick={() => { setEditCode(item); setCodeOpen(true); }}>Edit</Button>
-                        <Button size="sm" variant="ghost" className="text-red-500 hover:bg-red-50" onClick={() => handleDelete(resumeApi.deleteCodingStat, item.id!)}>Delete</Button>
-                      </div>
-                    </GlassCard>
-                  ))}
-                  {codingStats.length === 0 && <EmptyState icon={Code} text="Link coding profiles" />}
+              <motion.section initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="font-serif text-2xl font-bold">Coding Stats</h2>
+                  <Button onClick={() => { setEditingItem(null); setActiveDialog('coding'); }} variant="ghost" size="sm"><Plus className="w-4 h-4" /></Button>
                 </div>
-              </TabsContent>
+                <div className="space-y-4">
+                  {codingStats.map((item) => (
+                    <div key={item.id} className="bg-black text-white p-6 relative group">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="font-bold">{item.platformName}</span>
+                        <span className="text-xs uppercase tracking-widest bg-white/20 px-2 py-1">{item.totalProblemsSolved} Solved</span>
+                      </div>
+                      <div className="flex gap-1 h-1 bg-white/10">
+                        <div style={{ flex: item.easySolved }} className="bg-green-500" />
+                        <div style={{ flex: item.mediumSolved }} className="bg-yellow-500" />
+                        <div style={{ flex: item.hardSolved }} className="bg-red-500" />
+                      </div>
+
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button size="icon" variant="ghost" className="h-6 w-6 text-white hover:bg-white/20" onClick={() => handleDelete(resumeApi.deleteCodingStat, item.id!)}><Trash2 className="w-3 h-3" /></Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.section>
             </div>
-          </Tabs>
+
+          </div>
         </div>
       </div>
 
-      {/* Dialogs - Keeping strict logic but minimal UI for brevity */}
-      <DataDialog title="Education" open={eduOpen} setOpen={setEduOpen} data={editEdu} onSave={(d) => handleSave(editEdu?.id ? resumeApi.updateEducation : resumeApi.createEducation, { ...d, id: editEdu?.id }, setEducation, setEduOpen, setEditEdu, "Education")}>
-        {(data, set) => <EducationFields data={data} set={set} />}
+      {/* Dialogs - Wrapper logic to handle different forms */}
+      <DataDialog
+        open={!!activeDialog}
+        onOpenChange={(open) => !open && setActiveDialog(null)}
+        title={editingItem ? 'Edit Entry' : 'Add Entry'}
+      >
+        {activeDialog === 'education' && (
+          <Forms.Education
+            data={editingItem || {}}
+            onSave={(d) => handleSave(editingItem?.id ? resumeApi.updateEducation : resumeApi.createEducation, { ...d, id: editingItem?.id }, setEducation, "Education")}
+          />
+        )}
+        {activeDialog === 'experience' && (
+          <Forms.Experience
+            data={editingItem || {}}
+            onSave={(d) => handleSave(editingItem?.id ? resumeApi.updateExperience : resumeApi.createExperience, { ...d, id: editingItem?.id }, setExperience, "Experience")}
+          />
+        )}
+        {activeDialog === 'certification' && (
+          <Forms.Certification
+            data={editingItem || {}}
+            onSave={(d) => handleSave(editingItem?.id ? resumeApi.updateCertification : resumeApi.createCertification, { ...d, id: editingItem?.id }, setCertifications, "Certification")}
+          />
+        )}
+        {activeDialog === 'coding' && (
+          <Forms.Coding
+            data={editingItem || {}}
+            onSave={(d) => handleSave(editingItem?.id ? resumeApi.updateCodingStat : resumeApi.createCodingStat, { ...d, id: editingItem?.id }, setCodingStats, "Coding Stat")}
+          />
+        )}
       </DataDialog>
-      <DataDialog title="Experience" open={expOpen} setOpen={setExpOpen} data={editExp} onSave={(d) => handleSave(editExp?.id ? resumeApi.updateExperience : resumeApi.createExperience, { ...d, id: editExp?.id }, setExperience, setExpOpen, setEditExp, "Experience")}>
-        {(data, set) => <ExperienceFields data={data} set={set} />}
-      </DataDialog>
-      <DataDialog title="Certification" open={certOpen} setOpen={setCertOpen} data={editCert} onSave={(d) => handleSave(editCert?.id ? resumeApi.updateCertification : resumeApi.createCertification, { ...d, id: editCert?.id }, setCertifications, setCertOpen, setEditCert, "Certification")}>
-        {(data, set) => <CertificationFields data={data} set={set} />}
-      </DataDialog>
-      <DataDialog title="Coding Stat" open={codeOpen} setOpen={setCodeOpen} data={editCode} onSave={(d) => handleSave(editCode?.id ? resumeApi.updateCodingStat : resumeApi.createCodingStat, { ...d, id: editCode?.id }, setCodingStats, setCodeOpen, setEditCode, "Coding Stat")}>
-        {(data, set) => <CodingFields data={data} set={set} />}
-      </DataDialog>
-
     </MainLayout>
   );
 };
 
-// --- Helpers ---
+// --- Reusable Dialog & Forms ---
 
-const EmptyState = ({ icon: Icon, text }: any) => (
-  <div className="col-span-full py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-white/50">
-    <Icon className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-    <p className="text-slate-500 font-medium">{text}</p>
-  </div>
+const DataDialog = ({ open, onOpenChange, title, children }: any) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className="sm:max-w-[500px] bg-white text-black border-black p-8 rounded-none">
+      <DialogHeader>
+        <DialogTitle className="font-serif text-2xl font-bold mb-4">{title}</DialogTitle>
+      </DialogHeader>
+      {children}
+    </DialogContent>
+  </Dialog>
 );
 
-const DataDialog = ({ title, open, setOpen, data, onSave, children }: any) => {
-  const [formData, setFormData] = useState<any>({});
-  useEffect(() => { setFormData(data || {}) }, [data, open]);
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto w-full max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{data ? 'Edit' : 'Add'} {title}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-4 pt-4">
-          {children(formData, (update: any) => setFormData({ ...formData, ...update }))}
-          <div className="flex gap-2 justify-end pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" className="bg-indigo-600 text-white">Save Changes</Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-// --- Fields ---
-
-const EducationFields = ({ data, set }: any) => (
-  <>
-    <div className="space-y-2"><Label>Level</Label><Input value={data.educationLevel || ''} onChange={e => set({ educationLevel: e.target.value })} placeholder="B.Tech" required /></div>
-    <div className="space-y-2"><Label>Institution</Label><Input value={data.institutionName || ''} onChange={e => set({ institutionName: e.target.value })} required /></div>
-    <div className="space-y-2"><Label>University/Board</Label><Input value={data.boardOrUniversity || ''} onChange={e => set({ boardOrUniversity: e.target.value })} required /></div>
-    <div className="grid grid-cols-2 gap-4">
-      <div className="space-y-2"><Label>Year</Label><Input value={data.passingYear || ''} onChange={e => set({ passingYear: e.target.value })} required /></div>
-      <div className="space-y-2"><Label>Score</Label><Input value={data.scoreDetails || ''} onChange={e => set({ scoreDetails: e.target.value })} required /></div>
-    </div>
-    <div className="space-y-2"><Label>Proof URL</Label><Input value={data.proofUrl || ''} onChange={e => set({ proofUrl: e.target.value })} placeholder="https://" required /></div>
-  </>
-);
-
-const ExperienceFields = ({ data, set }: any) => (
-  <>
-    <div className="space-y-2"><Label>Title</Label><Input value={data.jobTitle || ''} onChange={e => set({ jobTitle: e.target.value })} required /></div>
-    <div className="space-y-2"><Label>Company</Label><Input value={data.companyName || ''} onChange={e => set({ companyName: e.target.value })} required /></div>
-    <div className="space-y-2"><Label>Skill Used</Label><Input value={data.skillName || ''} onChange={e => set({ skillName: e.target.value })} required /></div>
-    <div className="grid grid-cols-2 gap-4">
-      <div className="space-y-2"><Label>Start</Label><Input type="date" value={data.startDate || ''} onChange={e => set({ startDate: e.target.value })} required /></div>
-      <div className="space-y-2"><Label>End</Label><Input type="date" value={data.endDate || ''} onChange={e => set({ endDate: e.target.value })} /></div>
-    </div>
-    <div className="space-y-2"><Label>Proof URL</Label><Input value={data.proofUrl || ''} onChange={e => set({ proofUrl: e.target.value })} required /></div>
-  </>
-);
-
-const CertificationFields = ({ data, set }: any) => (
-  <>
-    <div className="space-y-2"><Label>Name</Label><Input value={data.certificationName || ''} onChange={e => set({ certificationName: e.target.value })} required /></div>
-    <div className="space-y-2"><Label>Organization</Label><Input value={data.issuingOrganization || ''} onChange={e => set({ issuingOrganization: e.target.value })} required /></div>
-    <div className="space-y-2"><Label>Related Skill</Label><Input value={data.skillName || ''} onChange={e => set({ skillName: e.target.value })} required /></div>
-    <div className="space-y-2"><Label>Issue Date</Label><Input type="date" value={data.issueDate || ''} onChange={e => set({ issueDate: e.target.value })} required /></div>
-    <div className="space-y-2"><Label>Proof URL</Label><Input value={data.proofUrl || ''} onChange={e => set({ proofUrl: e.target.value })} required /></div>
-  </>
-);
-
-const CodingFields = ({ data, set }: any) => (
-  <>
-    <div className="space-y-2"><Label>Platform</Label><Input value={data.platformName || ''} onChange={e => set({ platformName: e.target.value })} placeholder="LeetCode" required /></div>
-    <div className="grid grid-cols-3 gap-2">
-      <div className="space-y-2"><Label>Easy</Label><Input type="number" value={data.easySolved || ''} onChange={e => set({ easySolved: parseInt(e.target.value) || 0 })} /></div>
-      <div className="space-y-2"><Label>Med</Label><Input type="number" value={data.mediumSolved || ''} onChange={e => set({ mediumSolved: parseInt(e.target.value) || 0 })} /></div>
-      <div className="space-y-2"><Label>Hard</Label><Input type="number" value={data.hardSolved || ''} onChange={e => set({ hardSolved: parseInt(e.target.value) || 0 })} /></div>
-    </div>
-    <div className="space-y-2"><Label>Total</Label><Input type="number" value={data.totalProblemsSolved || ''} onChange={e => set({ totalProblemsSolved: parseInt(e.target.value) || 0 })} /></div>
-    <div className="space-y-2"><Label>Profile URL</Label><Input value={data.proofUrl || ''} onChange={e => set({ proofUrl: e.target.value })} required /></div>
-  </>
-);
+const Forms = {
+  Education: ({ data, onSave }: any) => {
+    const [formData, setFormData] = useState(data);
+    const set = (u: any) => setFormData({ ...formData, ...u });
+    return (
+      <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-4">
+        <div className="space-y-2"><Label>Level</Label><Input value={formData.educationLevel || ''} onChange={e => set({ educationLevel: e.target.value })} placeholder="B.Tech" className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <div className="space-y-2"><Label>Institution</Label><Input value={formData.institutionName || ''} onChange={e => set({ institutionName: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <div className="space-y-2"><Label>University/Board</Label><Input value={formData.boardOrUniversity || ''} onChange={e => set({ boardOrUniversity: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2"><Label>Year</Label><Input value={formData.passingYear || ''} onChange={e => set({ passingYear: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+          <div className="space-y-2"><Label>Score</Label><Input value={formData.scoreDetails || ''} onChange={e => set({ scoreDetails: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        </div>
+        <div className="space-y-2"><Label>Proof URL</Label><Input value={formData.proofUrl || ''} onChange={e => set({ proofUrl: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <Button type="submit" className="w-full bg-black text-white hover:bg-gray-800 rounded-none mt-4">Save</Button>
+      </form>
+    );
+  },
+  Experience: ({ data, onSave }: any) => {
+    const [formData, setFormData] = useState(data);
+    const set = (u: any) => setFormData({ ...formData, ...u });
+    return (
+      <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-4">
+        <div className="space-y-2"><Label>Title</Label><Input value={formData.jobTitle || ''} onChange={e => set({ jobTitle: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <div className="space-y-2"><Label>Company</Label><Input value={formData.companyName || ''} onChange={e => set({ companyName: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <div className="space-y-2"><Label>Skill Used</Label><Input value={formData.skillName || ''} onChange={e => set({ skillName: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2"><Label>Start</Label><Input type="date" value={formData.startDate || ''} onChange={e => set({ startDate: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+          <div className="space-y-2"><Label>End</Label><Input type="date" value={formData.endDate || ''} onChange={e => set({ endDate: e.target.value })} className="rounded-none border-gray-300 focus:border-black" /></div>
+        </div>
+        <div className="space-y-2"><Label>Proof URL</Label><Input value={formData.proofUrl || ''} onChange={e => set({ proofUrl: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <Button type="submit" className="w-full bg-black text-white hover:bg-gray-800 rounded-none mt-4">Save</Button>
+      </form>
+    );
+  },
+  Certification: ({ data, onSave }: any) => {
+    const [formData, setFormData] = useState(data);
+    const set = (u: any) => setFormData({ ...formData, ...u });
+    return (
+      <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-4">
+        <div className="space-y-2"><Label>Name</Label><Input value={formData.certificationName || ''} onChange={e => set({ certificationName: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <div className="space-y-2"><Label>Organization</Label><Input value={formData.issuingOrganization || ''} onChange={e => set({ issuingOrganization: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <div className="space-y-2"><Label>Related Skill</Label><Input value={formData.skillName || ''} onChange={e => set({ skillName: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <div className="space-y-2"><Label>Issue Date</Label><Input type="date" value={formData.issueDate || ''} onChange={e => set({ issueDate: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <div className="space-y-2"><Label>Proof URL</Label><Input value={formData.proofUrl || ''} onChange={e => set({ proofUrl: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <Button type="submit" className="w-full bg-black text-white hover:bg-gray-800 rounded-none mt-4">Save</Button>
+      </form>
+    );
+  },
+  Coding: ({ data, onSave }: any) => {
+    const [formData, setFormData] = useState(data);
+    const set = (u: any) => setFormData({ ...formData, ...u });
+    return (
+      <form onSubmit={(e) => { e.preventDefault(); onSave(formData); }} className="space-y-4">
+        <div className="space-y-2"><Label>Platform</Label><Input value={formData.platformName || ''} onChange={e => set({ platformName: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-2"><Label>Easy</Label><Input type="number" value={formData.easySolved || ''} onChange={e => set({ easySolved: parseInt(e.target.value) || 0 })} className="rounded-none border-gray-300 focus:border-black" /></div>
+          <div className="space-y-2"><Label>Med</Label><Input type="number" value={formData.mediumSolved || ''} onChange={e => set({ mediumSolved: parseInt(e.target.value) || 0 })} className="rounded-none border-gray-300 focus:border-black" /></div>
+          <div className="space-y-2"><Label>Hard</Label><Input type="number" value={formData.hardSolved || ''} onChange={e => set({ hardSolved: parseInt(e.target.value) || 0 })} className="rounded-none border-gray-300 focus:border-black" /></div>
+        </div>
+        <div className="space-y-2"><Label>Total</Label><Input type="number" value={formData.totalProblemsSolved || ''} onChange={e => set({ totalProblemsSolved: parseInt(e.target.value) || 0 })} className="rounded-none border-gray-300 focus:border-black" /></div>
+        <div className="space-y-2"><Label>Profile URL</Label><Input value={formData.proofUrl || ''} onChange={e => set({ proofUrl: e.target.value })} className="rounded-none border-gray-300 focus:border-black" required /></div>
+        <Button type="submit" className="w-full bg-black text-white hover:bg-gray-800 rounded-none mt-4">Save</Button>
+      </form>
+    );
+  }
+}
 
 export default Resume;

@@ -95,7 +95,7 @@ const Sessions = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { variant: "default" | "secondary" | "destructive"; icon: any }> = {
-      PENDING: { variant: "secondary", icon: Clock },
+      REQUESTED: { variant: "secondary", icon: Clock },
       ACCEPTED: { variant: "default", icon: CheckCircle2 },
       REJECTED: { variant: "destructive", icon: XCircle },
       COMPLETED: { variant: "default", icon: CheckCircle2 },
@@ -113,11 +113,11 @@ const Sessions = () => {
     );
   };
 
-  const pendingSessions = sessions.filter((s) => s.status === "PENDING");
+  const pendingSessions = sessions.filter((s) => s.status === "REQUESTED");
   const activeSessions = sessions.filter((s) => s.status === "ACCEPTED");
   const completedSessions = sessions.filter((s) => s.status === "COMPLETED");
   const otherSessions = sessions.filter(
-    (s) => !["PENDING", "ACCEPTED", "COMPLETED"].includes(s.status)
+    (s) => !["REQUESTED", "ACCEPTED", "COMPLETED"].includes(s.status)
   );
 
   if (loading) {
@@ -326,7 +326,7 @@ const SessionList = ({ sessions, getStatusBadge, onUpdateStatus }: SessionListPr
                 </div>
               </div>
               <div className="flex gap-2">
-                {session.status === "PENDING" && session.role === "TEACHER" && (
+                {session.status === "REQUESTED" && session.role === "TEACHER" && (
                   <>
                     <Button
                       size="sm"
@@ -352,7 +352,7 @@ const SessionList = ({ sessions, getStatusBadge, onUpdateStatus }: SessionListPr
                     Mark Complete
                   </Button>
                 )}
-                {session.status === "PENDING" && session.role === "LEARNER" && (
+                {session.status === "REQUESTED" && session.role === "LEARNER" && (
                   <Button
                     size="sm"
                     variant="destructive"

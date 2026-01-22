@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, Sparkles, Eye, EyeOff } from "lucide-react";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -12,6 +12,8 @@ const SignUp = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -45,14 +47,14 @@ const SignUp = () => {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Visual Side (Left) */}
-      <div className="hidden lg:relative lg:flex lg:flex-col lg:justify-between p-12 bg-slate-900 text-white overflow-hidden">
+      <div className="hidden lg:relative lg:flex lg:flex-col lg:justify-between p-12 bg-black text-white overflow-hidden">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1555099962-4199c345e5dd?q=80&w=2070"
             alt="Workspace"
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover opacity-50 grayscale hover:grayscale-0 transition-all duration-1000 ease-out"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-slate-900/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
         </div>
 
         <div className="relative z-10">
@@ -62,14 +64,14 @@ const SignUp = () => {
         </div>
 
         <div className="relative z-10 max-w-lg space-y-6">
-          <div className="w-12 h-12 rounded-xl bg-indigo-500/20 backdrop-blur-md flex items-center justify-center border border-indigo-500/30">
-            <Sparkles className="w-6 h-6 text-indigo-300" />
+          <div className="w-12 h-12 flex items-center justify-center border border-white/20">
+            <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <h2 className="text-4xl font-display font-bold leading-tight">
-            "The best way to learn is to teach. SkillSwap makes it effortless."
+          <h2 className="text-4xl font-serif font-bold leading-tight tracking-tight">
+            "The best way to learn is to teach."
           </h2>
-          <p className="text-lg text-slate-300">
-            Join thousands of students and professionals exchanging knowledge daily.
+          <p className="text-sm uppercase tracking-widest text-gray-400">
+            — SkillSwap Philosophy
           </p>
         </div>
       </div>
@@ -78,41 +80,50 @@ const SignUp = () => {
       <div className="flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center lg:text-left space-y-2">
-            <h1 className="text-3xl font-display font-bold text-slate-900">Create an account</h1>
-            <p className="text-slate-500">
-              Enter your details to start swapping skills.
+            <h1 className="text-4xl font-serif font-bold text-black tracking-tight">Initiation.</h1>
+            <p className="text-gray-500 font-light">
+              Begin your journey of exchange.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Email Address</label>
+              <label className="text-xs uppercase tracking-widest font-bold text-gray-900">Email Address</label>
               <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value.toLowerCase())}
                 required
-                placeholder="student@university.edu"
-                className="h-12 rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500/20"
+                placeholder="name@example.com"
+                className="h-12 rounded-none border-gray-200 focus:ring-0 focus:border-black transition-colors"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Password</label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Create a password"
-                className="h-12 rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500/20"
-              />
+              <label className="text-xs uppercase tracking-widest font-bold text-gray-900">Password</label>
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Create a password"
+                  className="h-12 rounded-none border-gray-200 focus:ring-0 focus:border-black transition-colors pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
               {/* Password Strength Bar */}
               {password.length > 0 && (
-                <div className="h-1 bg-slate-100 rounded-full overflow-hidden mt-2">
+                <div className="h-1 bg-gray-100 mt-2">
                   <div
-                    className={`h-full transition-all duration-300 ${password.length > 8 ? 'bg-emerald-500 w-full' :
-                      password.length > 5 ? 'bg-yellow-500 w-2/3' : 'bg-red-500 w-1/3'
+                    className={`h-full transition-all duration-300 ${password.length > 8 ? 'bg-black w-full' :
+                      password.length > 5 ? 'bg-gray-500 w-2/3' : 'bg-gray-300 w-1/3'
                       }`}
                   />
                 </div>
@@ -120,19 +131,28 @@ const SignUp = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Confirm Password</label>
-              <Input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                placeholder="Confirm your password"
-                className="h-12 rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500/20"
-              />
+              <label className="text-xs uppercase tracking-widest font-bold text-gray-900">Confirm Password</label>
+              <div className="relative">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="Confirm your password"
+                  className="h-12 rounded-none border-gray-200 focus:ring-0 focus:border-black transition-colors pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {error && (
-              <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm border border-red-100 flex items-center gap-2">
+              <div className="p-3 bg-red-50 text-red-600 text-sm border border-red-100 flex items-center gap-2">
                 <span>⚠️</span> {error}
               </div>
             )}
@@ -140,15 +160,15 @@ const SignUp = () => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 text-lg rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02]"
+              className="w-full h-14 text-sm uppercase tracking-widest font-bold rounded-none bg-black hover:bg-gray-900 text-white transition-all hover:tracking-[0.2em] duration-300"
             >
-              {loading ? "Creating Account..." : "Sign Up"}
+              {loading ? "Creating Profile..." : "Join Now"}
             </Button>
           </form>
 
-          <p className="text-center text-sm text-slate-500">
-            Already have an account?{" "}
-            <Link to="/signin" className="text-indigo-600 font-semibold hover:underline">
+          <p className="text-center text-sm text-gray-500">
+            Already a member?{" "}
+            <Link to="/signin" className="text-black font-semibold hover:underline">
               Log in
             </Link>
           </p>

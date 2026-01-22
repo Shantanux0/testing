@@ -2,6 +2,7 @@ import LandingNav from "@/components/landing/LandingNav";
 import Hero from "@/components/landing/Hero";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Features from "@/components/landing/Features";
+import Contact from "@/components/landing/Contact";
 import Footer from "@/components/landing/Footer";
 
 const Landing = () => {
@@ -15,6 +16,7 @@ const Landing = () => {
       <div id="features">
         <Features />
       </div>
+      <Contact />
       <Footer />
     </div>
   );

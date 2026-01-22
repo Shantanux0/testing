@@ -20,6 +20,7 @@ public class SessionService {
 
     private final SwapSessionRepository sessionRepository;
     private final UserAuthRepo userAuthRepo;
+    private final com.SkillSwap.PeerToPeerLearning.P9Notification.Service.NotificationService notificationService;
 
     public SessionDto requestSession(String learnerEmail, Long teacherId, String skillName) {
         UserAuthEntity learner = findUserByEmail(learnerEmail);
@@ -43,6 +44,15 @@ public class SessionService {
                 .build();
 
         session = sessionRepository.save(session);
+
+        // Notify Teacher
+        notificationService.createNotification(
+                teacher.getId(),
+                "New Request: " + learner.getName() + " wants to learn " + skillName + ".",
+                "INFO",
+                session.getId(),
+                "SESSION");
+
         return mapToDto(session, learner.getId());
     }
 
@@ -65,6 +75,27 @@ public class SessionService {
 
         session.setStatus(status.toUpperCase());
         session = sessionRepository.save(session);
+
+        // Notify relevant party
+        if ("ACCEPTED".equalsIgnoreCase(status)) {
+            // Teacher accepted -> Notify Learner
+            notificationService.createNotification(
+                    session.getLearner().getId(),
+                    "Session Accepted! " + session.getTeacher().getName() + " accepted your request for "
+                            + session.getSkillName() + ".",
+                    "SUCCESS",
+                    session.getId(),
+                    "SESSION");
+        } else if ("REJECTED".equalsIgnoreCase(status)) {
+            // Teacher rejected -> Notify Learner
+            notificationService.createNotification(
+                    session.getLearner().getId(),
+                    "Session Declined: " + session.getTeacher().getName() + " cannot help with "
+                            + session.getSkillName() + " right now.",
+                    "WARNING",
+                    session.getId(),
+                    "SESSION");
+        }
 
         return mapToDto(session, user.getId());
     }

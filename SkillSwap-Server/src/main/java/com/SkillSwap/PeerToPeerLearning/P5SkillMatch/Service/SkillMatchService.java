@@ -89,8 +89,11 @@ public class SkillMatchService {
                 List<SwapMatchDto> matches = new ArrayList<>();
 
                 for (UserProfileEntity candidateProfile : allProfiles) {
+                        System.out.println("DEBUG: Checking candidate: " + candidateProfile.getUser().getEmail());
+
                         // Skip self
                         if (candidateProfile.getUser().getId().equals(currentUser.getId())) {
+                                System.out.println("DEBUG: Skipped self.");
                                 continue;
                         }
 
@@ -100,7 +103,31 @@ public class SkillMatchService {
                         // CHECK MATCHING CONDITIONS:
 
                         // 1. Can they teach me? (has skill, willing to teach, AND passed test)
-                        if (!canUserTeachSkill(candidateId, candidateProfile, skillToLearn, candidateEmail)) {
+                        boolean canTeach = canUserTeachSkill(candidateId, candidateProfile, skillToLearn,
+                                        candidateEmail);
+                        System.out.println("DEBUG: Can " + candidateEmail + " teach " + skillToLearn + "? " + canTeach);
+
+                        if (!canTeach) {
+                                // Extra debug why
+                                if (candidateProfile.getSkills() == null || !candidateProfile.getSkills().toLowerCase()
+                                                .contains(skillToLearn.toLowerCase())) {
+                                        System.out.println("DEBUG: Failed skill string check. Skills: "
+                                                        + candidateProfile.getSkills());
+                                } else {
+                                        Optional<UserSkillLevel> sl = userSkillLevelRepository
+                                                        .findByUserIdAndSkillNameIgnoreCase(candidateId, skillToLearn);
+                                        if (sl.isEmpty())
+                                                System.out.println("DEBUG: Failed UserSkillLevel lookup.");
+                                        else if (!sl.get().getWillingToTeach())
+                                                System.out.println("DEBUG: Not willing to teach.");
+                                        else {
+                                                Double ts = testPortalService.getBestTestScore(candidateId,
+                                                                skillToLearn);
+                                                System.out.println("DEBUG: Test Score: " + ts);
+                                                if (ts == null || ts < (10.0 / 15.0))
+                                                        System.out.println("DEBUG: Failed test score requirement.");
+                                        }
+                                }
                                 continue;
                         }
 
@@ -109,6 +136,8 @@ public class SkillMatchService {
 
                         // 2. Do they want to learn what I teach?
                         boolean wantsMySkill = wantsToLearnSkill(candidateProfile, skillToTeach);
+                        System.out.println("DEBUG: Does " + candidateEmail + " want to learn " + skillToTeach + "? "
+                                        + wantsMySkill);
 
                         // Determine swap type
                         String swapType;
@@ -324,8 +353,9 @@ public class SkillMatchService {
                         return false;
                 }
 
-                // Check if user has declared skill level
-                Optional<UserSkillLevel> skillLevel = userSkillLevelRepository.findByUserIdAndSkillName(userId, skill);
+                // Check if user has declared skill level (Case Insensitive)
+                Optional<UserSkillLevel> skillLevel = userSkillLevelRepository
+                                .findByUserIdAndSkillNameIgnoreCase(userId, skill);
                 if (skillLevel.isEmpty()) {
                         return false;
                 }
@@ -350,7 +380,7 @@ public class SkillMatchService {
         }
 
         private UserSkillLevel getUserSkillLevel(Long userId, String skill) {
-                return userSkillLevelRepository.findByUserIdAndSkillName(userId, skill).orElse(null);
+                return userSkillLevelRepository.findByUserIdAndSkillNameIgnoreCase(userId, skill).orElse(null);
         }
 
         /**

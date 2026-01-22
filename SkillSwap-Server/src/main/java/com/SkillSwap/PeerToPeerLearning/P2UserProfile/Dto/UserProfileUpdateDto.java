@@ -27,19 +27,17 @@ public class UserProfileUpdateDto {
     @Past(message = "Date of birth must be in the past")
     private LocalDate dateOfBirth;
 
-    @Pattern(regexp = "^[+]?[0-9]{10,15}$", message = "Invalid phone number format")
+    // Relaxed phone validation
     private String phoneNumber;
 
     @Size(max = 100, message = "Location must not exceed 100 characters")
     private String location;
 
-    @URL(message = "Invalid website URL")
+    // Relaxed URL validation
     private String website;
 
-    @URL(message = "Invalid LinkedIn URL")
     private String linkedinUrl;
 
-    @URL(message = "Invalid GitHub URL")
     private String githubUrl;
 
     private String skills;

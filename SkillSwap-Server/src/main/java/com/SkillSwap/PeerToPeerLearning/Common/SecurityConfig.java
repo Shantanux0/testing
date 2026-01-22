@@ -40,10 +40,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // Public Endpoints
-                        .requestMatchers("/login", "/register",
-                                "/send-reset-otp", "/reset-password",
-                                "/logout", "/send-otp", "/verify-otp",
-                                "/is-authenticated")
+                        .requestMatchers("/api/auth/login", "/api/auth/register",
+                                "/api/auth/send-reset-otp", "/api/auth/reset-password",
+                                "/api/auth/logout", "/api/auth/send-otp", "/api/auth/verify-otp",
+                                "/api/auth/is-authenticated")
                         .permitAll()
 
                         // Profile Module
