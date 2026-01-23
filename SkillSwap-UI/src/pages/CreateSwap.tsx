@@ -42,13 +42,16 @@ const CreateSwap = () => {
             setShowAnimation(true);
         } catch (error: any) {
             setLoading(false);
-            const msg = error.message || "Unknown error";
+            const responseMsg = error.response?.data?.message || error.response?.data || error.message || "Unknown error";
+            // Ensure responseMsg is a string
+            const msg = typeof responseMsg === "string" ? responseMsg : JSON.stringify(responseMsg);
 
             if (msg.includes("PASS A TEST") || msg.includes("must have")) {
-                toast.error("Certification Required", {
-                    description: "You need to verify your teaching skills first.",
+                toast.error("Skill Validation Failed", {
+                    description: msg,
+                    duration: 6000,
                     action: {
-                        label: "Verify Now",
+                        label: "Take Test",
                         onClick: () => navigate("/test-portal", { state: { autoCheckSkill: skillToTeach } })
                     }
                 });

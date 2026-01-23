@@ -66,7 +66,7 @@ const OTP = () => {
 
         setLoading(true);
         try {
-            await authApi.verifyOtp(email, otpValue);
+            await authApi.verifyOtp({ email, otp: otpValue });
             toast.success("Identity Verified", { description: "Redirecting to secure area..." });
             setTimeout(() => navigate("/signin"), 1500);
         } catch (err: any) {
@@ -79,7 +79,7 @@ const OTP = () => {
 
     const handleResend = async () => {
         try {
-            await authApi.sendOtp(email);
+            await authApi.resendOtp(email);
             toast.success("Code Sent", { description: `Fresh code dispatched to ${email}` });
             setOtp(new Array(6).fill(""));
             inputRefs.current[0]?.focus();

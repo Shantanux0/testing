@@ -58,3 +58,6 @@ WHERE NOT EXISTS (
     SELECT 1 FROM user_certifications c 
     WHERE c.user_auth_id = v.user_auth_id AND c.skill_name = v.skill_name
 );
+
+-- Reset sequence to match the highest ID (Fix for duplicate key error)
+SELECT setval('tbl_user_auth_id_seq', (SELECT MAX(id) FROM tbl_user_auth));

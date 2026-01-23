@@ -71,9 +71,9 @@ export const resumeApi = {
 };
 
 export const testApi = {
-  generateTest: (skillName: string) => api.post("/test-portal/generate", { skillName }).then((res) => res.data),
-  submitTest: (testId: number, answers: any[]) => api.post("/test-portal/submit", { testId, answers }).then((res) => res.data),
-  getTestHistory: () => api.get("/test-portal/history").then((res) => res.data),
+  generateTest: (skillName: string) => api.post("/test/generate", { skillName }).then((res) => res.data),
+  submitTest: (testId: number, answers: any[]) => api.post("/test/submit", { testId, answers }).then((res) => res.data),
+  getTestHistory: () => api.get("/test/history").then((res) => res.data),
 };
 
 export interface SwapMatchDto {

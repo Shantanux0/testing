@@ -5,6 +5,8 @@ import com.SkillSwap.PeerToPeerLearning.P1Auth.Repository.UserAuthRepo;
 import com.SkillSwap.PeerToPeerLearning.P4testPortal.DTO.*;
 import com.SkillSwap.PeerToPeerLearning.P4testPortal.Entity.UserSkillTestEntity;
 import com.SkillSwap.PeerToPeerLearning.P4testPortal.Repository.UserSkillTestRepository;
+import com.SkillSwap.PeerToPeerLearning.P2UserProfile.Service.UserSkillLevelService;
+import com.SkillSwap.PeerToPeerLearning.P2UserProfile.Dto.SkillLevelDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class TestPortalService {
     private final UserAuthRepo userAuthRepo;
     private final UserSkillTestRepository testRepository;
     private final ObjectMapper objectMapper;
+    private final UserSkillLevelService userSkillLevelService;
 
     private static final int TOTAL_QUESTIONS = 15;
     private static final int PASSING_SCORE = 10; // 67%
@@ -88,7 +91,7 @@ public class TestPortalService {
             testRepository.save(test);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Test has expired");
         }
-        
+
         return mapToTestResponse(test);
     }
 
@@ -125,6 +128,24 @@ public class TestPortalService {
         test.setIsPassed(isPassed);
         test.setTestStatus("COMPLETED");
         testRepository.save(test);
+
+        // AUTO-CREATE SKILL LEVEL IF PASSED
+        if (isPassed) {
+            try {
+                SkillLevelDto skillLevelDto = SkillLevelDto.builder()
+                        .skillName(test.getSkillName())
+                        .proficiencyLevel("EXPERT")
+                        .willingToTeach(true)
+                        .selfRating(5)
+                        .yearsOfExperience(1) // Default to 1 year
+                        .build();
+                userSkillLevelService.addOrUpdateSkillLevel(email, skillLevelDto);
+                log.info("Auto-created EXPERT skill level for user {} skill {}", email, test.getSkillName());
+            } catch (Exception e) {
+                log.error("Failed to auto-create skill level for user {}", email, e);
+                // Non-blocking
+            }
+        }
 
         return buildTestResult(test, questions, request.getAnswers(), correctAnswers);
     }
@@ -253,14 +274,17 @@ public class TestPortalService {
     }
 
     private boolean isAnswerCorrect(String userAnswer, String correctAnswer) {
-        if (userAnswer == null || correctAnswer == null) return false;
+        if (userAnswer == null || correctAnswer == null)
+            return false;
 
         userAnswer = userAnswer.trim();
         correctAnswer = correctAnswer.trim();
 
-        if (userAnswer.equalsIgnoreCase(correctAnswer)) return true;
+        if (userAnswer.equalsIgnoreCase(correctAnswer))
+            return true;
 
-        // Handle case where user answer is "A. Foundational..." and correct answer is "A"
+        // Handle case where user answer is "A. Foundational..." and correct answer is
+        // "A"
         if (correctAnswer.length() == 1 && userAnswer.length() > 2) {
             char firstChar = Character.toUpperCase(userAnswer.charAt(0));
             char correctChar = Character.toUpperCase(correctAnswer.charAt(0));
@@ -270,7 +294,7 @@ public class TestPortalService {
                 return true;
             }
         }
-        
+
         // Handle reverse case (backend has full text, user sends 'A') - good to have
         if (userAnswer.length() == 1 && correctAnswer.length() > 2) {
             char firstChar = Character.toUpperCase(correctAnswer.charAt(0));
