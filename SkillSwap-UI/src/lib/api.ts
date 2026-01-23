@@ -40,7 +40,7 @@ export const authApi = {
   signup: (data: any) => api.post("/auth/register", data).then((res) => res.data),
   signin: (data: any) => api.post("/auth/login", data).then((res) => res.data),
   verifyOtp: (data: any) => api.post("/auth/verify-otp", data).then((res) => res.data),
-  resendOtp: (email: string) => api.post(`/auth/resend-otp?email=${email}`).then((res) => res.data),
+  resendOtp: (email: string) => api.post(`/auth/send-otp?email=${email}`, null).then((res) => res.data),
   // Aliases for AuthContext compatibility
   register: (e: string, p: string) => api.post("/auth/register", { email: e, password: p }).then(res => res.data),
   login: (e: string, p: string) => api.post("/auth/login", { email: e, password: p }).then(res => res.data),
