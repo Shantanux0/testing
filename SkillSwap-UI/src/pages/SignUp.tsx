@@ -47,7 +47,7 @@ const SignUp = () => {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Visual Side (Left) */}
-      <div className="hidden lg:relative lg:flex lg:flex-col lg:justify-between p-12 bg-black text-white overflow-hidden">
+      <div className="relative flex flex-col justify-between p-8 lg:p-12 bg-black text-white overflow-hidden min-h-[30vh] lg:min-h-screen">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1555099962-4199c345e5dd?q=80&w=2070"
@@ -67,7 +67,7 @@ const SignUp = () => {
           <div className="w-12 h-12 flex items-center justify-center border border-white/20">
             <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <h2 className="text-4xl font-serif font-bold leading-tight tracking-tight">
+          <h2 className="text-3xl lg:text-4xl font-serif font-bold leading-tight tracking-tight">
             "The best way to learn is to teach."
           </h2>
           <p className="text-sm uppercase tracking-widest text-gray-400">
@@ -152,8 +152,8 @@ const SignUp = () => {
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 text-red-600 text-sm border border-red-100 flex items-center gap-2">
-                <span>⚠️</span> {error}
+              <div className="text-red-500 text-xs tracking-widest uppercase font-bold flex items-center gap-2 mt-2">
+                <span>Failed:</span> {error}
               </div>
             )}
 

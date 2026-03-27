@@ -53,7 +53,8 @@ const AppNavbar = () => {
                 <div className="hidden md:flex items-center gap-8">
                     <Link to="/dashboard" className="text-xs uppercase tracking-widest text-black/60 hover:text-black transition-colors font-semibold">Dashboard</Link>
                     <Link to="/create-swap" className="text-xs uppercase tracking-widest text-black/60 hover:text-black transition-colors font-semibold">Create Swap</Link>
-                    <Link to="/sessions" className="text-xs uppercase tracking-widest text-black/60 hover:text-black transition-colors font-semibold">Sessions</Link>
+                    <Link to="/swaps" className="text-xs uppercase tracking-widest text-black/60 hover:text-black transition-colors font-semibold">Messages</Link>
+                    <Link to="/resume" className="text-xs uppercase tracking-widest text-black/60 hover:text-black transition-colors font-semibold">Resume</Link>
                     <Link to="/tests" className="text-xs uppercase tracking-widest text-black/60 hover:text-black transition-colors font-semibold">Tests</Link>
                 </div>
             </div>

@@ -1,15 +1,22 @@
 import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { resumeApi, Education, Experience, Certification, CodingStat } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Plus, Trash2, Edit2, GraduationCap, Briefcase, Award, Code, ExternalLink, Download } from "lucide-react";
+import { Plus, Trash2, Edit2, GraduationCap, Briefcase, Award, Code, ExternalLink, Download, AlertTriangle, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Resume = () => {
+  const { profile, hasResume } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const routeAlert = (location.state as any)?.alert;
+
   // State
   const [education, setEducation] = useState<Education[]>([]);
   const [experience, setExperience] = useState<Experience[]>([]);
@@ -57,10 +64,43 @@ const Resume = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
   };
 
+  const isProfileComplete = !!(profile?.firstName && profile?.skills && profile?.skillsToLearn);
+
   return (
     <MainLayout>
+      {/* Onboarding Warning Banner */}
+      {(!isProfileComplete || !hasResume) && (
+        <div className="fixed top-16 left-0 right-0 z-50 bg-amber-50 border-b-2 border-amber-400">
+          <div className="max-w-7xl mx-auto px-4 md:px-12 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center gap-2 text-amber-700 font-bold text-sm shrink-0">
+              <AlertTriangle className="w-4 h-4" />
+              {routeAlert || "Add your Experience to start swapping skills!"}
+            </div>
+            <div className="flex items-center gap-4 ml-auto text-xs font-semibold uppercase tracking-widest">
+              <span className={`flex items-center gap-1 ${isProfileComplete ? 'text-green-600' : 'text-amber-600'}`}>
+                {isProfileComplete ? '✓' : '①'} Profile
+              </span>
+              <ChevronRight className="w-3 h-3 text-gray-400" />
+              <span className={`flex items-center gap-1 ${hasResume ? 'text-green-600' : 'text-amber-600'}`}>
+                {hasResume ? '✓' : '②'} Resume
+              </span>
+              <ChevronRight className="w-3 h-3 text-gray-400" />
+              <span className="text-gray-400">③ Start Swap</span>
+            </div>
+            {!isProfileComplete && (
+              <button
+                onClick={() => navigate('/profile')}
+                className="ml-2 px-4 py-1 bg-black text-white text-xs uppercase tracking-widest hover:bg-gray-800 transition-colors shrink-0"
+              >
+                Go to Profile →
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white">
-        <div className="max-w-5xl mx-auto p-8 lg:p-20">
+        <div className="max-w-5xl mx-auto p-8 lg:p-20" style={{ paddingTop: (!isProfileComplete || !hasResume) ? '6rem' : '' }}>
 
           {/* Header */}
           <div className="flex justify-between items-end mb-24 border-b border-black pb-8">

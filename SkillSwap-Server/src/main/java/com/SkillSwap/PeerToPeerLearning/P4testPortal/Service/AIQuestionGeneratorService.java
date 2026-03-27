@@ -1,4 +1,4 @@
-package com.SkillSwap.PeerToPeerLearning.P4TestPortal.Service;
+package com.SkillSwap.PeerToPeerLearning.P4testPortal.Service;
 
 
 

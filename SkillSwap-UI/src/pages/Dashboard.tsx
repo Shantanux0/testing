@@ -46,26 +46,14 @@ const recommendedSwaps = [
   },
 ];
 
-const activeSessions = [
-  {
-    skill: "Machine Learning",
-    partner: "Alex Kim",
-    progress: 65,
-    nextSession: "Today, 3:00 PM",
-  },
-  {
-    skill: "TypeScript",
-    partner: "Jordan Lee",
-    progress: 40,
-    nextSession: "Thu, 2:00 PM",
-  },
-];
+// Removed static activeSessions mock in favor of dynamic state
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { profile } = useAuth();
   const [incomingRequests, setIncomingRequests] = useState<Session[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<Session[]>([]);
+  const [activeSessions, setActiveSessions] = useState<Session[]>([]);
 
   useEffect(() => {
     fetchSessions();
@@ -77,9 +65,11 @@ const Dashboard = () => {
 
       const incoming = data.filter((s: Session) => s.status === 'REQUESTED' && s.role === 'TEACHER');
       const outgoing = data.filter((s: Session) => s.status === 'REQUESTED' && s.role === 'LEARNER');
+      const accepted = data.filter((s: Session) => s.status === 'ACCEPTED');
 
       setIncomingRequests(incoming);
       setOutgoingRequests(outgoing);
+      setActiveSessions(accepted);
     } catch (e) {
       console.error(e);
     }
@@ -312,22 +302,30 @@ const Dashboard = () => {
               <div className="space-y-6">
                 <h2 className="font-serif text-2xl font-bold border-b border-black/10 pb-4">In Progress</h2>
                 <div className="space-y-6">
-                  {activeSessions.map((session) => (
-                    <div key={session.skill} className="space-y-2 group cursor-pointer">
-                      <div className="flex justify-between items-end mb-2">
+                  {activeSessions.length === 0 ? (
+                    <div className="text-gray-400 text-sm border border-dashed border-gray-200 p-6 text-center">
+                      No active sessions yet. Accept a request to start!
+                    </div>
+                  ) : activeSessions.map((session) => (
+                    <div key={session.sessionId} className="space-y-4 group">
+                      <div className="flex justify-between items-start mb-2">
                         <div>
-                          <div className="text-xs uppercase tracking-widest text-gray-400 mb-1">Target</div>
-                          <div className="font-serif text-lg font-bold">{session.skill}</div>
+                          <div className="text-xs uppercase tracking-widest text-gray-400 mb-1">
+                            {session.role === 'TEACHER' ? 'Teaching' : 'Learning'}
+                          </div>
+                          <div className="font-serif text-lg font-bold">{session.skillName}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs text-gray-500">with {session.partner}</div>
+                          <div className="text-xs text-gray-500 mb-2">with {session.partnerName}</div>
+                          <Button
+                            onClick={() => navigate('/swaps')}
+                            className="h-7 text-[10px] uppercase tracking-widest rounded-none bg-black text-white hover:bg-gray-800"
+                          >
+                            Message
+                          </Button>
                         </div>
                       </div>
-                      <Progress value={session.progress} className="h-1 bg-gray-100" />
-                      <div className="flex justify-between items-center text-xs text-gray-400 mt-2">
-                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {session.nextSession}</span>
-                        <span>{session.progress}%</span>
-                      </div>
+                      <div className="w-full bg-gray-100 h-1 mt-2"></div>
                     </div>
                   ))}
                 </div>

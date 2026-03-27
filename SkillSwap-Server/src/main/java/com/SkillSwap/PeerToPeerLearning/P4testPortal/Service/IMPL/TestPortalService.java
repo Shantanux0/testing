@@ -334,6 +334,8 @@ public class TestPortalService {
     // ===== JSON (de)serialization =====
 
     private String serializeQuestions(List<TestQuestion> questions) {
+        if (questions == null)
+            return null;
         try {
             return objectMapper.writeValueAsString(questions);
         } catch (JsonProcessingException e) {
@@ -342,6 +344,8 @@ public class TestPortalService {
     }
 
     private String serializeAnswers(List<String> answers) {
+        if (answers == null)
+            return null;
         try {
             return objectMapper.writeValueAsString(answers);
         } catch (JsonProcessingException e) {
@@ -350,6 +354,8 @@ public class TestPortalService {
     }
 
     private String serializeUserAnswers(List<UserAnswer> answers) {
+        if (answers == null)
+            return null;
         try {
             return objectMapper.writeValueAsString(answers);
         } catch (JsonProcessingException e) {
@@ -358,28 +364,37 @@ public class TestPortalService {
     }
 
     private List<TestQuestion> parseQuestionsJson(String json) {
+        if (json == null)
+            return new ArrayList<>();
         try {
             return objectMapper.readValue(json,
                     objectMapper.getTypeFactory().constructCollectionType(List.class, TestQuestion.class));
         } catch (JsonProcessingException e) {
+            log.error("Failed to parse questions JSON: {}", json, e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to parse questions JSON");
         }
     }
 
     private List<String> parseAnswersJson(String json) {
+        if (json == null)
+            return new ArrayList<>();
         try {
             return objectMapper.readValue(json,
                     objectMapper.getTypeFactory().constructCollectionType(List.class, String.class));
         } catch (JsonProcessingException e) {
+            log.error("Failed to parse answers JSON: {}", json, e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to parse answers JSON");
         }
     }
 
     private List<UserAnswer> parseUserResponsesJson(String json) {
+        if (json == null)
+            return new ArrayList<>();
         try {
             return objectMapper.readValue(json,
                     objectMapper.getTypeFactory().constructCollectionType(List.class, UserAnswer.class));
         } catch (JsonProcessingException e) {
+            log.error("Failed to parse user responses JSON: {}", json, e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to parse user responses JSON");
         }
     }

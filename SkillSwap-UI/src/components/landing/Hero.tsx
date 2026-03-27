@@ -1,8 +1,9 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Play, Star } from "lucide-react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { ArrowRight, Play, Star, Terminal } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import CodePlayground from "@/components/CodePlayground";
 
 const Hero = () => {
   const { isAuthenticated } = useAuth();
@@ -37,12 +38,18 @@ const Hero = () => {
     },
   };
 
+  const [showCompiler, setShowCompiler] = useState(false);
+
   return (
     <section ref={ref} className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-background pt-20">
-      {/* Cinematic Background - Grainy texture overlay could be added here */}
+      {/* Cinematic Background - Grainy texture overlay */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]"
         style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")' }}>
       </div>
+
+      <AnimatePresence>
+        {showCompiler && <CodePlayground onClose={() => setShowCompiler(false)} />}
+      </AnimatePresence>
 
       <div className="container-cinematic relative z-10 w-full grid lg:grid-cols-12 gap-12 items-center">
 
@@ -79,12 +86,10 @@ const Hero = () => {
                   Begin Journey
                 </button>
               </Link>
-              <Link to="#features">
-                <button className="btn-cinematic-outline flex items-center gap-2 group">
-                  <Play className="w-3 h-3 fill-current group-hover:scale-125 transition-transform duration-300" />
-                  Watch Film
-                </button>
-              </Link>
+              <button onClick={() => setShowCompiler(true)} className="btn-cinematic-outline flex items-center gap-2 group">
+                <Terminal className="w-3 h-3 fill-current group-hover:scale-125 transition-transform duration-300" />
+                Live Compiler
+              </button>
             </motion.div>
           </motion.div>
 

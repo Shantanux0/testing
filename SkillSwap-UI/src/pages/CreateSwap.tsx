@@ -9,6 +9,7 @@ import { Search, Sparkles, BookOpen, GraduationCap, ArrowRight, CheckCircle2, Ro
 import { motion, AnimatePresence } from "framer-motion";
 
 import MatchingAnimation from "@/components/MatchingAnimation";
+import { Logo } from "@/components/ui/logo";
 
 const CreateSwap = () => {
     const navigate = useNavigate();
@@ -97,11 +98,12 @@ const CreateSwap = () => {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black font-sans relative overflow-hidden">
-            {/* Film Grain */}
-            <div className="absolute inset-0 pointer-events-none opacity-[0.05]"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E")` }}
-            />
+        <div className="min-h-screen bg-white text-black selection:bg-black selection:text-white font-sans relative overflow-hidden">
+            {/* Soft Ambient White Background */}
+            <div className="absolute inset-0 z-0 bg-white">
+                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gray-50 rounded-full blur-[120px] opacity-80" />
+                <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gray-100 rounded-full blur-[100px] opacity-80" />
+            </div>
 
             {/* Status Modals Overlay */}
             <AnimatePresence>
@@ -110,7 +112,7 @@ const CreateSwap = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl p-6"
+                        className="fixed inset-0 z-[100] flex items-center justify-center bg-white/95 backdrop-blur-xl p-6"
                     >
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
@@ -140,7 +142,7 @@ const CreateSwap = () => {
 
                             <Button
                                 onClick={() => navigate('/')}
-                                className="h-16 px-12 rounded-full bg-white text-black hover:bg-gray-200 text-sm uppercase tracking-widest w-full"
+                                className="h-16 px-12 rounded-full bg-black text-white hover:bg-gray-800 text-sm uppercase tracking-widest w-full"
                             >
                                 Return to Home
                             </Button>
@@ -150,12 +152,10 @@ const CreateSwap = () => {
             </AnimatePresence>
 
             {/* Nav */}
-            <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 mix-blend-difference text-white">
+            <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 text-black">
                 <div className="flex items-center gap-8">
                     <Link to="/">
-                        <div className="font-serif font-bold text-2xl tracking-tighter cursor-pointer">
-                            SKILLSWAP
-                        </div>
+                        <Logo className="text-black" />
                     </Link>
                     {!statusModal && (
                         <div className="hidden md:flex items-center gap-8 ml-8">
@@ -168,8 +168,8 @@ const CreateSwap = () => {
                 <div className="flex items-center gap-6">
                     <button onClick={() => navigate('/dashboard')} className="text-xs uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity">Dashboard</button>
                     <button onClick={() => navigate('/profile')} className="text-xs uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity">Profile</button>
-                    <div className="w-[1px] h-4 bg-white/30 mx-2" />
-                    <button onClick={() => navigate('/')} className="flex items-center gap-2 text-xs uppercase tracking-widest hover:text-white transition-colors">Exit <div className="w-8 h-[1px] bg-white" /></button>
+                    <div className="w-[1px] h-4 bg-black/20 mx-2" />
+                    <button onClick={() => navigate('/')} className="flex items-center gap-2 text-xs uppercase tracking-widest hover:text-black transition-colors">Exit <div className="w-8 h-[1px] bg-black" /></button>
                 </div>
             </nav>
 
@@ -182,9 +182,9 @@ const CreateSwap = () => {
                             {/* Stepper Dots */}
                             <div className="flex justify-center mb-16 space-x-12">
                                 {[1, 2, 3].map((i) => (
-                                    <div key={i} className={`flex items-center gap-4 ${step >= i ? 'opacity-100' : 'opacity-30'}`}>
-                                        <div className={`w-3 h-3 rounded-full transition-all duration-300 ${step >= i ? 'bg-white scale-125' : 'bg-gray-500'}`} />
-                                        <span className="text-xs font-bold uppercase tracking-[0.2em]">
+                                    <div key={i} className={`flex items-center gap-4 ${step >= i ? 'opacity-100' : 'opacity-40'} transition-all duration-500`}>
+                                        <div className={`w-3 h-3 rounded-full transition-all duration-500 ${step >= i ? 'bg-black shadow-[0_0_15px_rgba(0,0,0,0.1)] scale-110' : 'bg-gray-300'}`} />
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-gray-500">
                                             {i === 1 ? 'Seek' : i === 2 ? 'Offer' : 'Confirm'}
                                         </span>
                                     </div>
@@ -204,30 +204,34 @@ const CreateSwap = () => {
                                         <>
                                             <div className="space-y-6">
                                                 <motion.div
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ delay: 0.2 }}
-                                                    className="inline-block"
+                                                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                    transition={{ delay: 0.2, type: "spring" }}
+                                                    className="inline-flex justify-center mb-8"
                                                 >
                                                     {step === 1 ? (
-                                                        <div className="flex justify-center mb-6"><div className="p-3 border border-white/20 rounded-full"><Search className="w-6 h-6" /></div></div>
+                                                        <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm">
+                                                            <Search className="w-6 h-6 text-black" />
+                                                        </div>
                                                     ) : (
-                                                        <div className="flex justify-center mb-6"><div className="p-3 border border-white/20 rounded-full"><Sparkles className="w-6 h-6" /></div></div>
+                                                        <div className="p-4 rounded-2xl bg-white border border-gray-200 shadow-sm">
+                                                            <Sparkles className="w-6 h-6 text-black" />
+                                                        </div>
                                                     )}
                                                 </motion.div>
 
-                                                <h1 className="text-5xl md:text-8xl font-serif font-bold tracking-tighter leading-none">
+                                                <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold tracking-tighter leading-[1.1] text-black">
                                                     {step === 1 ? (
-                                                        <>What do you <br /><span className="italic text-gray-500">crave</span> to learn?</>
+                                                        <>What do you <br /><span className="italic text-gray-400 font-light">crave</span> to learn?</>
                                                     ) : (
-                                                        <>What will you <br /><span className="italic text-gray-500">share</span> with the world?</>
+                                                        <>What will you <br /><span className="italic text-gray-400 font-light">share</span> with the world?</>
                                                     )}
                                                 </h1>
                                             </div>
 
-                                            <div className="max-w-xl mx-auto relative group">
+                                            <div className="max-w-xl mx-auto relative group pt-8">
                                                 <Input
-                                                    className="h-24 text-4xl text-center bg-transparent border-0 border-b border-white/20 rounded-none focus:ring-0 focus:border-white placeholder:text-gray-800 transition-all duration-500 font-serif text-white focus-visible:ring-0"
+                                                    className="relative h-24 text-4xl text-center bg-transparent border-0 border-b-2 border-gray-200 rounded-none focus:ring-0 focus:border-black placeholder:text-gray-300 transition-all duration-500 font-serif text-black focus-visible:ring-0 shadow-none px-0"
                                                     placeholder={step === 1 ? "e.g. Photography" : "e.g. Photoshop"}
                                                     value={step === 1 ? skillToLearn : skillToTeach}
                                                     onChange={(e) => step === 1 ? setSkillToLearn(e.target.value) : setSkillToTeach(e.target.value)}
@@ -241,10 +245,10 @@ const CreateSwap = () => {
                                                     size="lg"
                                                     onClick={handleNext}
                                                     disabled={loading || (step === 1 ? !skillToLearn : !skillToTeach)}
-                                                    className="h-20 px-12 text-sm uppercase tracking-[0.3em] rounded-full bg-white text-black hover:bg-gray-200 transition-all duration-500 hover:scale-105"
+                                                    className="h-16 px-10 text-xs uppercase tracking-[0.25em] rounded-full bg-black text-white hover:bg-gray-800 transition-all duration-500 hover:scale-[1.02] shadow-[0_10_40px_rgba(0,0,0,0.1)] hover:shadow-lg"
                                                 >
-                                                    {loading ? <RotateCw className="animate-spin w-6 h-6" /> : (
-                                                        <div className="flex items-center gap-4">
+                                                    {loading ? <RotateCw className="animate-spin w-5 h-5 text-white" /> : (
+                                                        <div className="flex items-center gap-3 font-semibold text-white">
                                                             {step === 1 ? "Continue" : "Find Match"}
                                                             <ArrowRight className="w-4 h-4" />
                                                         </div>
@@ -256,36 +260,42 @@ const CreateSwap = () => {
 
                                     {/* Step 3: Match Found Confirmation */}
                                     {step === 3 && matchResult && matchResult[0] && (
-                                        <div className="space-y-8 max-w-2xl mx-auto border border-white/10 p-12 rounded-3xl bg-white/5 backdrop-blur-sm">
-                                            <div className="flex justify-center mb-8">
-                                                <div className="p-4 border border-green-500/30 rounded-full bg-green-500/10">
-                                                    <CheckCircle2 className="w-12 h-12 text-green-400" />
+                                        <div className="space-y-10 max-w-2xl mx-auto border border-gray-100 p-12 md:p-16 rounded-[2.5rem] bg-white shadow-xl relative overflow-hidden">
+                                            {/* Decorative glow inside card */}
+                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-gray-50 blur-[60px] rounded-full pointer-events-none" />
+
+                                            <div className="flex justify-center mb-8 relative z-10">
+                                                <div className="p-5 border border-green-200 rounded-2xl bg-green-50 shadow-sm">
+                                                    <CheckCircle2 className="w-10 h-10 text-green-600" />
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-2">
-                                                <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Perfect Match Found</h2>
-                                                <h1 className="text-5xl font-serif font-bold">{matchResult[0].partnerName}</h1>
+                                            <div className="space-y-3 relative z-10">
+                                                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Perfect Match Found</h2>
+                                                <h1 className="text-4xl md:text-5xl font-serif font-bold text-black">{matchResult[0].partnerName}</h1>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-8 text-left py-8 border-y border-white/10">
-                                                <div>
-                                                    <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">They Teach</p>
-                                                    <p className="text-xl font-serif">{matchResult[0].skillITeach}</p>
-                                                    <span className="text-xs text-green-400">Expert Level Verified</span>
+                                            <div className="grid grid-cols-2 gap-8 text-left py-10 border-y border-gray-100 relative z-10">
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">They Teach</p>
+                                                    <p className="text-2xl font-serif text-black">{matchResult[0].skillITeach}</p>
+                                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-green-50 border border-green-200">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                                        <span className="text-[10px] font-bold text-green-700 uppercase tracking-widest">Expert Level Confirmed</span>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">They Want to Learn</p>
-                                                    <p className="text-xl font-serif">{matchResult[0].skillILearn}</p>
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">They Want to Learn</p>
+                                                    <p className="text-2xl font-serif text-black">{matchResult[0].skillILearn}</p>
                                                 </div>
                                             </div>
 
-                                            <div className="pt-4 flex gap-4 justify-center">
+                                            <div className="pt-6 flex gap-4 justify-center relative z-10 w-full mb-2">
                                                 <Button
                                                     size="lg"
                                                     variant="outline"
                                                     onClick={() => setStep(2)}
-                                                    className="h-16 px-8 rounded-full bg-transparent border border-white text-white hover:bg-white/10"
+                                                    className="flex-1 h-14 rounded-full bg-transparent border border-gray-200 text-black hover:bg-gray-50 hover:border-gray-300 text-[11px] uppercase tracking-widest font-semibold transition-all"
                                                 >
                                                     Back
                                                 </Button>
@@ -293,9 +303,9 @@ const CreateSwap = () => {
                                                     size="lg"
                                                     onClick={handleConfirmSwap}
                                                     disabled={loading}
-                                                    className="h-16 px-12 text-sm uppercase tracking-[0.2em] rounded-full bg-white text-black hover:bg-gray-200 transition-all duration-300 hover:scale-105"
+                                                    className="flex-[2] h-14 text-[11px] font-bold uppercase tracking-[0.2em] rounded-full bg-black text-white hover:bg-gray-800 transition-all duration-300 shadow-md"
                                                 >
-                                                    {loading ? <RotateCw className="animate-spin w-5 h-5" /> : "Initialize Swap"}
+                                                    {loading ? <RotateCw className="animate-spin w-4 h-4 mx-auto" /> : "Initialize Swap"}
                                                 </Button>
                                             </div>
                                         </div>

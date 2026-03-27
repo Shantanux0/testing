@@ -12,6 +12,7 @@ import com.SkillSwap.PeerToPeerLearning.P4testPortal.Service.IMPL.TestPortalServ
 import com.SkillSwap.PeerToPeerLearning.P5SkillMatch.Dto.SwapMatchDto;
 import com.SkillSwap.PeerToPeerLearning.P5SkillMatch.Dto.MatchResponseDto;
 import com.SkillSwap.PeerToPeerLearning.P6Feedback.Service.ReputationService;
+import com.SkillSwap.PeerToPeerLearning.P1Auth.Service.impl.EmailService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class SkillMatchService {
         private final ResumeService resumeService;
         private final ReputationService reputationService;
         private final ObjectMapper objectMapper;
+        private final EmailService emailService;
 
         // Self-reported matching criteria (50%)
         private static final double SKILL_LEVEL_WEIGHT = 0.20;
@@ -242,6 +244,25 @@ public class SkillMatchService {
 
                 // Sort by match score descending (perfect swaps naturally rank higher)
                 matches.sort(Comparator.comparingDouble(SwapMatchDto::getMatchScore).reversed());
+
+                // Send Email Notification (wrapped in try/catch to avoid crashing if SMTP
+                // fails)
+                try {
+                        String name = currentUserProfile.getFirstName() != null ? currentUserProfile.getFirstName()
+                                        : "Learner";
+                        if (!matches.isEmpty()) {
+                                emailService.sendMatchFoundEmail(userEmail, name, skillToLearn, skillToTeach);
+                                for (SwapMatchDto match : matches) {
+                                        emailService.sendMatchFoundEmail(match.getPartnerEmail(),
+                                                        match.getPartnerName(),
+                                                        skillToTeach, skillToLearn);
+                                }
+                        } else {
+                                emailService.sendStillSearchingEmail(userEmail, name, skillToLearn, skillToTeach);
+                        }
+                } catch (Exception e) {
+                        System.err.println("WARN: Failed to send match notification emails: " + e.getMessage());
+                }
 
                 return matches;
         }

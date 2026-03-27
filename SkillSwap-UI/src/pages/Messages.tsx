@@ -1,216 +1,409 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MainLayout from "@/components/layout/MainLayout";
-import ChatSidebar from "@/components/messages/ChatSidebar";
-import ChatWindow from "@/components/messages/ChatWindow";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import {
+  Send, Search, ArrowLeft, Video, ChevronRight,
+  MessageCircle, Clock, Circle
+} from "lucide-react";
 
-export interface Contact {
-  id: number;
-  name: string;
-  initials: string;
-  skillTag: string;
-  lastMessage: string;
-  time: string;
-  unread: number;
-  isOnline: boolean;
-  avatar?: string;
-}
+// ─── API ─────────────────────────────────────────────────────────────────────
+const API = () => `http://${window.location.hostname}:8080/api`;
+const tok = () => localStorage.getItem("token");
+const jsonH = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${tok()}` });
 
-export interface Message {
-  id: number;
-  text: string;
-  time: string;
-  isOwn: boolean;
-  isRead: boolean;
-}
-
-const contacts: Contact[] = [
-  {
-    id: 1,
-    name: "Sarah Chen",
-    initials: "SC",
-    skillTag: "React Mentor",
-    lastMessage: "That useEffect example was really helpful!",
-    time: "2m ago",
-    unread: 2,
-    isOnline: true,
-  },
-  {
-    id: 2,
-    name: "Mike Johnson",
-    initials: "MJ",
-    skillTag: "UI/UX Expert",
-    lastMessage: "I'll send you the Figma link tomorrow",
-    time: "15m ago",
-    unread: 0,
-    isOnline: true,
-  },
-  {
-    id: 3,
-    name: "Emily Davis",
-    initials: "ED",
-    skillTag: "Python Mentor",
-    lastMessage: "Great progress on the ML project! 🎉",
-    time: "1h ago",
-    unread: 0,
-    isOnline: false,
-  },
-  {
-    id: 4,
-    name: "Alex Kim",
-    initials: "AK",
-    skillTag: "TypeScript Pro",
-    lastMessage: "The types are looking much cleaner now",
-    time: "3h ago",
-    unread: 5,
-    isOnline: true,
-  },
-  {
-    id: 5,
-    name: "Jordan Lee",
-    initials: "JL",
-    skillTag: "Node.js Expert",
-    lastMessage: "Check out this API pattern I mentioned",
-    time: "Yesterday",
-    unread: 0,
-    isOnline: false,
-  },
-];
-
-const messagesByContact: Record<number, Message[]> = {
-  1: [
-    { id: 1, text: "Hey! Are you ready for our React session?", time: "10:30 AM", isOwn: false, isRead: true },
-    { id: 2, text: "Yes! I've been practicing hooks all week", time: "10:31 AM", isOwn: true, isRead: true },
-    { id: 3, text: "Perfect! Let's start with useEffect. It's one of the most important hooks to master.", time: "10:32 AM", isOwn: false, isRead: true },
-    { id: 4, text: "I always get confused with the dependency array 😅", time: "10:33 AM", isOwn: true, isRead: true },
-    { id: 5, text: "That's super common! Think of it like this: the dependency array tells React 'only re-run this effect when these values change'", time: "10:34 AM", isOwn: false, isRead: true },
-    { id: 6, text: "Oh that makes so much more sense!", time: "10:35 AM", isOwn: true, isRead: true },
-    { id: 7, text: "That useEffect example was really helpful!", time: "10:36 AM", isOwn: false, isRead: true },
-  ],
-  2: [
-    { id: 1, text: "The new dashboard design looks amazing!", time: "9:00 AM", isOwn: true, isRead: true },
-    { id: 2, text: "Thanks! I spent a lot of time on the micro-interactions", time: "9:05 AM", isOwn: false, isRead: true },
-    { id: 3, text: "Can you share the Figma file?", time: "9:10 AM", isOwn: true, isRead: true },
-    { id: 4, text: "I'll send you the Figma link tomorrow", time: "9:15 AM", isOwn: false, isRead: true },
-  ],
-  3: [
-    { id: 1, text: "How's the machine learning project going?", time: "2:00 PM", isOwn: false, isRead: true },
-    { id: 2, text: "Making great progress! The model accuracy is up to 94%", time: "2:05 PM", isOwn: true, isRead: true },
-    { id: 3, text: "Great progress on the ML project! 🎉", time: "2:10 PM", isOwn: false, isRead: true },
-  ],
-  4: [
-    { id: 1, text: "I refactored the types like you suggested", time: "11:00 AM", isOwn: true, isRead: true },
-    { id: 2, text: "The types are looking much cleaner now", time: "11:30 AM", isOwn: false, isRead: true },
-  ],
-  5: [
-    { id: 1, text: "What's the best pattern for REST APIs?", time: "Yesterday", isOwn: true, isRead: true },
-    { id: 2, text: "Check out this API pattern I mentioned", time: "Yesterday", isOwn: false, isRead: true },
-  ],
+const msgApi = {
+  getConversations: () =>
+    fetch(`${API()}/messages/conversations`, { headers: { Authorization: `Bearer ${tok()}` } }).then(r => r.json()),
+  getConversation: (partnerId: number) =>
+    fetch(`${API()}/messages/conversation/${partnerId}`, { headers: { Authorization: `Bearer ${tok()}` } }).then(r => r.json()),
+  sendMessage: (receiverId: number, content: string, sessionId?: number) =>
+    fetch(`${API()}/messages/send`, {
+      method: "POST", headers: jsonH(),
+      body: JSON.stringify({ receiverId, content, sessionId: sessionId ?? null }),
+    }).then(async r => { if (!r.ok) throw new Error(await r.text()); return r.json(); }),
 };
 
+interface Conversation {
+  partnerId: number;
+  partnerName: string;
+  partnerEmail: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  unreadCount: number;
+  sessionId?: number;
+}
+
+interface Message {
+  id: number;
+  senderId: number;
+  senderName: string;
+  content: string;
+  createdAt: string;
+  isOwn: boolean;
+  isRead: boolean;
+  sessionId?: number;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+const timeAgo = (iso: string) => {
+  if (!iso) return "";
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+};
+
+const initials = (name: string) => name?.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "??";
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 const Messages = () => {
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const navigate = useNavigate();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selected, setSelected] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const handleSelectContact = (contact: Contact) => {
-    setSelectedContact(contact);
-    setMessages(messagesByContact[contact.id] || []);
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
+  useEffect(() => {
+    if (selected) {
+      loadMessages(selected.partnerId);
+      // Poll every 3 seconds for new messages
+      pollRef.current = setInterval(() => loadMessages(selected.partnerId), 3000);
+    }
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [selected?.partnerId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const loadConversations = async () => {
+    setLoading(true);
+    try {
+      const data = await msgApi.getConversations();
+      setConversations(Array.isArray(data) ? data : []);
+    } catch { toast.error("Failed to load conversations"); }
+    finally { setLoading(false); }
   };
 
-  const handleSendMessage = (text: string) => {
-    if (!selectedContact) return;
-    
-    const newMessage: Message = {
-      id: messages.length + 1,
-      text,
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      isOwn: true,
-      isRead: false,
-    };
-    
-    setMessages([...messages, newMessage]);
+  const loadMessages = async (partnerId: number) => {
+    try {
+      const data = await msgApi.getConversation(partnerId);
+      setMessages(Array.isArray(data) ? data : []);
+    } catch { /* silent */ }
   };
 
-  const handleBack = () => {
-    setSelectedContact(null);
+  const handleSend = async () => {
+    if (!input.trim() || !selected) return;
+    setSending(true);
+    try {
+      const msg = await msgApi.sendMessage(selected.partnerId, input.trim(), selected.sessionId);
+      setMessages(prev => [...prev, msg]);
+      setInput("");
+      loadConversations(); // refresh unread counts
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send");
+    } finally { setSending(false); }
   };
 
-  const filteredContacts = contacts.filter(
-    (contact) =>
-      contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contact.skillTag.toLowerCase().includes(searchQuery.toLowerCase())
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
+  const goToRoom = async (conv: Conversation) => {
+    if (!conv.sessionId) { toast.info("No active session linked to this conversation"); return; }
+
+    // Instead of opening room immediately, send a trigger message
+    try {
+      setSending(true);
+      await msgApi.sendMessage(conv.partnerId, "[SYSTEM:MEETING_START_REQUEST]", conv.sessionId);
+      loadMessages(conv.partnerId);
+      loadConversations();
+    } catch {
+      toast.error("Failed to start meeting request");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const joinMeeting = async (conv: Conversation) => {
+    if (!conv.sessionId) return;
+    try {
+      setSending(true);
+      await msgApi.sendMessage(conv.partnerId, "[SYSTEM:MEETING_JOINED]", conv.sessionId);
+
+      const params = new URLSearchParams({
+        sessionId: String(conv.sessionId),
+        role: "LEARNER",
+        skill: "Skill Swap",
+        partner: conv.partnerName,
+      });
+      window.open(`/teaching-room?${params}`, "_blank");
+
+      loadMessages(conv.partnerId);
+      loadConversations();
+    } catch {
+      toast.error("Failed to join meeting");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const enterRoom = (conv: Conversation) => {
+    if (!conv.sessionId) return;
+    const params = new URLSearchParams({
+      sessionId: String(conv.sessionId),
+      role: "TEACHER",
+      skill: "Skill Swap",
+      partner: conv.partnerName,
+    });
+    window.open(`/teaching-room?${params}`, "_blank");
+  };
+
+  const filtered = conversations.filter(c =>
+    c.partnerName?.toLowerCase().includes(search.toLowerCase()) ||
+    c.partnerEmail?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const renderMessageContent = (msg: Message) => {
+    if (msg.content === "[SYSTEM:MEETING_START_REQUEST]") {
+      if (msg.isOwn) {
+        return (
+          <div className="flex flex-col items-center gap-2 p-2">
+            <Video className="w-5 h-5 text-gray-500" />
+            <span className="text-sm font-medium">You started a video call</span>
+            <span className="text-xs text-gray-500">Waiting for {selected?.partnerName} to join...</span>
+          </div>
+        );
+      } else {
+        return (
+          <div className="flex flex-col items-center gap-3 p-2">
+            <div className="bg-black text-white p-3 rounded-full animate-bounce">
+              <Video className="w-6 h-6" />
+            </div>
+            <span className="text-sm font-bold">Incoming Video Call</span>
+            <button
+              onClick={() => selected && joinMeeting(selected)}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full text-sm uppercase tracking-widest transition-transform hover:scale-105"
+            >
+              Join Meeting
+            </button>
+          </div>
+        );
+      }
+    }
+
+    if (msg.content === "[SYSTEM:MEETING_JOINED]") {
+      return (
+        <div className="flex flex-col items-center gap-2 p-2 w-full">
+          <span className="text-sm font-bold text-green-600">Meeting Started!</span>
+          <button
+            onClick={() => selected && enterRoom(selected)}
+            className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-6 rounded-full text-xs uppercase tracking-widest"
+          >
+            Enter Room
+          </button>
+        </div>
+      );
+    }
+
+    return <p className="text-[15px] leading-relaxed break-words">{msg.content}</p>;
+  };
 
   return (
     <MainLayout>
-      <div className="h-[calc(100vh-5rem)] lg:h-screen flex">
-        {/* Sidebar - Hidden on mobile when chat is open */}
-        <div
-          className={`w-full lg:w-96 shrink-0 border-r border-border ${
-            selectedContact ? "hidden lg:block" : "block"
-          }`}
-        >
-          <ChatSidebar
-            contacts={filteredContacts}
-            selectedContact={selectedContact}
-            onSelectContact={handleSelectContact}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-          />
+      <div className="h-[calc(100vh-5rem)] flex bg-white font-sans">
+
+        {/* ─── SIDEBAR ──────────────────────────────────────────────── */}
+        <div className={`w-full lg:w-80 xl:w-96 border-r border-gray-100 flex flex-col ${selected ? "hidden lg:flex" : "flex"}`}>
+          {/* Search */}
+          <div className="px-5 py-4 border-b border-gray-100">
+            <div className="flex items-center gap-2 text-2xl font-bold tracking-tight mb-4">
+              <MessageCircle className="w-6 h-6" /> Messages
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search conversations..."
+                className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border-0 text-sm focus:outline-none focus:ring-1 focus:ring-black rounded-none"
+              />
+            </div>
+          </div>
+
+          {/* Conversation List */}
+          <div className="flex-1 overflow-y-auto">
+            {loading ? (
+              <div className="flex items-center justify-center h-32 text-gray-400 text-sm">Loading…</div>
+            ) : filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-48 text-gray-400 gap-2">
+                <MessageCircle className="w-10 h-10 opacity-20" />
+                <p className="text-sm">No conversations yet</p>
+                <p className="text-xs text-gray-300">Start by matching with someone!</p>
+              </div>
+            ) : (
+              filtered.map(conv => (
+                <button
+                  key={conv.partnerId}
+                  onClick={() => setSelected(conv)}
+                  className={`w-full px-5 py-4 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-50 text-left
+                    ${selected?.partnerId === conv.partnerId ? "bg-black text-white" : ""}`}
+                >
+                  {/* Avatar */}
+                  <div className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold shrink-0
+                    ${selected?.partnerId === conv.partnerId ? "bg-white text-black" : "bg-gray-100 text-gray-700"}`}>
+                    {initials(conv.partnerName)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-sm truncate">{conv.partnerName}</span>
+                      <span className={`text-xs shrink-0 ml-2 ${selected?.partnerId === conv.partnerId ? "text-gray-300" : "text-gray-400"}`}>
+                        {timeAgo(conv.lastMessageAt)}
+                      </span>
+                    </div>
+                    <p className={`text-xs truncate mt-0.5 ${selected?.partnerId === conv.partnerId ? "text-gray-300" : "text-gray-500"}`}>
+                      {conv.lastMessage || "Start a conversation"}
+                    </p>
+                  </div>
+                  {conv.unreadCount > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-black text-white text-xs flex items-center justify-center shrink-0 font-bold">
+                      {conv.unreadCount}
+                    </span>
+                  )}
+                </button>
+              ))
+            )}
+          </div>
         </div>
 
-        {/* Chat Window */}
-        <AnimatePresence mode="wait">
-          {selectedContact ? (
-            <motion.div
-              key="chat"
-              initial={{ x: "100%", opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: "100%", opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="flex-1 lg:block"
-            >
-              <ChatWindow
-                contact={selectedContact}
-                messages={messages}
-                onSendMessage={handleSendMessage}
-                onBack={handleBack}
-              />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="hidden lg:flex flex-1 items-center justify-center"
-            >
-              <div className="text-center">
-                <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
-                  <svg
-                    className="w-12 h-12 text-primary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
-                  </svg>
+        {/* ─── CHAT WINDOW ──────────────────────────────────────────── */}
+        {selected ? (
+          <div className="flex-1 flex flex-col bg-[#f0f2f5]">
+            {/* Header */}
+            <div className="px-6 py-3 border-b border-gray-200 flex items-center justify-between bg-white shrink-0 shadow-sm z-10">
+              <div className="flex items-center gap-4">
+                <button onClick={() => setSelected(null)} className="lg:hidden text-gray-500 hover:text-black">
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-sm text-gray-700">
+                  {initials(selected.partnerName)}
                 </div>
-                <h3 className="font-display text-xl font-semibold mb-2">
-                  Select a conversation
-                </h3>
-                <p className="text-muted-foreground">
-                  Choose a chat from the sidebar to start messaging
-                </p>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-base text-gray-900 leading-tight">{selected.partnerName}</span>
+                  <span className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span> Online
+                  </span>
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              {selected.sessionId && (
+                <button
+                  onClick={() => goToRoom(selected)}
+                  title="Go to Teaching Room"
+                  className="w-10 h-10 flex items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  <Video className="w-6 h-6" />
+                </button>
+              )}
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-3" style={{ backgroundImage: "var(--chat-bg, none)" }}>
+              <AnimatePresence>
+                {messages.map((msg, i) => {
+                  const isSystem = msg.content.startsWith("[SYSTEM:");
+
+                  if (isSystem) {
+                    return (
+                      <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                        className="flex justify-center my-6 w-full"
+                      >
+                        <div className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-4 shadow-sm w-full max-w-sm text-center">
+                          {renderMessageContent(msg)}
+                          <span className="text-[10px] text-gray-400 mt-2 block">{timeAgo(msg.createdAt)}</span>
+                        </div>
+                      </motion.div>
+                    );
+                  }
+
+                  return (
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex ${msg.isOwn ? "justify-end" : "justify-start"}`}
+                    >
+                      <div className={`max-w-[75%] lg:max-w-md xl:max-w-lg relative group ${msg.isOwn ? 'pl-10' : 'pr-10'}`}>
+                        <div className={`px-4 py-2 text-[15px] shadow-sm
+                          ${msg.isOwn
+                            ? "bg-[#dcf8c6] text-black rounded-lg rounded-tr-none" // WhatsApp sent bubble color
+                            : "bg-white text-black rounded-lg rounded-tl-none"     // WhatsApp received bubble color
+                          }`}>
+                          {renderMessageContent(msg)}
+                          <div className={`text-[11px] text-gray-500 mt-1 flex items-center gap-1 justify-end`}>
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+              {messages.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-48 text-gray-400 gap-2">
+                  <p className="text-sm">No messages yet. Say hello! 👋</p>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className="px-5 py-3 bg-[#f0f2f5] shrink-0">
+              <div className="flex items-end gap-3 bg-white px-4 py-2 rounded-xl shadow-sm">
+                <textarea
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type a message"
+                  rows={1}
+                  className="flex-1 resize-none bg-transparent border-0 focus:outline-none focus:ring-0 text-[15px] pt-1.5 leading-relaxed"
+                  style={{ maxHeight: 120, overflowY: "auto" }}
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={!input.trim() || sending}
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-[#00a884] text-white hover:bg-[#008f6f] disabled:opacity-50 disabled:bg-gray-400 transition-colors shrink-0 mb-0.5"
+                >
+                  <Send className="w-5 h-5 ml-1" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Empty state */
+          <div className="hidden lg:flex flex-1 items-center justify-center bg-gray-50">
+            <div className="text-center">
+              <div className="w-20 h-20 mx-auto mb-6 bg-black flex items-center justify-center">
+                <MessageCircle className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Your Messages</h3>
+              <p className="text-gray-400 text-sm">Select a conversation to start chatting</p>
+            </div>
+          </div>
+        )}
       </div>
     </MainLayout>
   );

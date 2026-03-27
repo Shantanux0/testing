@@ -344,13 +344,30 @@ const SessionList = ({ sessions, getStatusBadge, onUpdateStatus }: SessionListPr
                   </>
                 )}
                 {session.status === "ACCEPTED" && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onUpdateStatus(session.sessionId, "COMPLETED")}
-                  >
-                    Mark Complete
-                  </Button>
+                  <>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        const params = new URLSearchParams({
+                          sessionId: String(session.sessionId),
+                          role: session.role,
+                          skill: session.skillName,
+                          partner: session.partnerName,
+                        });
+                        window.open(`/teaching-room?${params}`, "_blank");
+                      }}
+                      className="rounded-none bg-black text-white uppercase tracking-widest text-xs h-8 px-4"
+                    >
+                      Enter Room
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onUpdateStatus(session.sessionId, "COMPLETED")}
+                    >
+                      Mark Complete
+                    </Button>
+                  </>
                 )}
                 {session.status === "REQUESTED" && session.role === "LEARNER" && (
                   <Button

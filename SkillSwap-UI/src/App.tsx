@@ -13,7 +13,7 @@ import SignUp from "./pages/SignUp";
 import Profile from "./pages/Profile";
 import Resume from "./pages/Resume";
 import TestPortal from "./pages/TestPortal";
-import Sessions from "./pages/Sessions";
+import TeachingRoom from "./pages/TeachingRoom";
 
 import OTP from "./pages/OTP";
 import AboutUs from "./pages/AboutUs";
@@ -61,7 +61,7 @@ const App = () => (
               )}
             />
             <Route
-              path="/test-portal"
+              path="/tests"
               element={(
                 <ProtectedRoute>
                   <TestPortal />
@@ -69,10 +69,10 @@ const App = () => (
               )}
             />
             <Route
-              path="/sessions"
+              path="/test-portal"
               element={(
                 <ProtectedRoute>
-                  <Sessions />
+                  <TestPortal />
                 </ProtectedRoute>
               )}
             />
@@ -93,6 +93,14 @@ const App = () => (
               )}
             />
 
+            <Route
+              path="/teaching-room"
+              element={(
+                <ProtectedRoute>
+                  <TeachingRoom />
+                </ProtectedRoute>
+              )}
+            />
             <Route
               path="/create-swap"
               element={(

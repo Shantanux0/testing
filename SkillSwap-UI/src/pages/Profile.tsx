@@ -9,42 +9,21 @@ import { toast } from "sonner";
 import {
   Edit2, X, User, Mail, MapPin, Calendar, Globe, Linkedin, Github,
   Clock, Award, Zap, BookOpen, Target, Hash, Phone, Briefcase,
-  MessageSquare, Loader2, ArrowLeft, ChevronRight, ChevronLeft, CheckCircle2
+  MessageSquare, Loader2, ArrowLeft, ChevronRight, ChevronLeft, CheckCircle2, AlertTriangle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import AppNavbar from "@/components/layout/AppNavbar";
 
 const Profile = () => {
-  const { profile: authProfile, refreshProfile } = useAuth();
+  const { profile: authProfile, refreshProfile, hasResume } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(authProfile);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
   const navigate = useNavigate();
-
-  // LocalStorage helpers for profile image
-  const PROFILE_IMAGE_KEY = `profile_image_${authProfile?.email}`;
-
-  const saveImageToLocalStorage = (imageData: string) => {
-    try {
-      localStorage.setItem(PROFILE_IMAGE_KEY, imageData);
-    } catch (error) {
-      console.error('Failed to save image to localStorage:', error);
-      toast.error('Image too large to store');
-    }
-  };
-
-  const loadImageFromLocalStorage = (): string | null => {
-    try {
-      return localStorage.getItem(PROFILE_IMAGE_KEY);
-    } catch (error) {
-      console.error('Failed to load image from localStorage:', error);
-      return null;
-    }
-  };
+  const location = useLocation();
+  const routeAlert = (location.state as any)?.alert;
 
   // Calculate profile completion percentage
   const calculateCompletion = () => {
@@ -67,11 +46,6 @@ const Profile = () => {
       setLoading(true);
       const profileData = await profileApi.getProfile();
       if (profileData) {
-        // Load image from localStorage if available
-        const storedImage = loadImageFromLocalStorage();
-        if (storedImage) {
-          profileData.profileImageUrl = storedImage;
-        }
         setProfile(profileData);
       }
     } catch (error) {
@@ -85,16 +59,11 @@ const Profile = () => {
     if (!profile) return;
     setSaving(true);
     try {
-      // Save image to localStorage separately
-      if (profile.profileImageUrl && profile.profileImageUrl.startsWith('data:')) {
-        saveImageToLocalStorage(profile.profileImageUrl);
-      }
-
       const updateData = {
         firstName: profile.firstName,
         lastName: profile.lastName,
         bio: profile.bio,
-        profileImageUrl: '', // Don't send base64 to backend
+        profileImageUrl: profile.profileImageUrl,
         dateOfBirth: profile.dateOfBirth,
         phoneNumber: profile.phoneNumber,
         location: profile.location,
@@ -120,12 +89,11 @@ const Profile = () => {
       if (profile.id) {
         await profileApi.updateProfile(updateData);
       } else {
-        await profileApi.createProfile(updateData);
+        await profileApi.updateProfile(updateData);
       }
       await refreshProfile();
       await loadData();
       setIsEditing(false);
-      setCurrentStep(1);
       toast.success("Profile updated successfully");
     } catch (error: any) {
       toast.error(error.message || "Failed to save profile");
@@ -154,11 +122,45 @@ const Profile = () => {
     />
   );
 
+  // Compute profile completion
+  const isProfileComplete = !!(profile?.firstName && profile?.skills && profile?.skillsToLearn);
+
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white">
       <AppNavbar />
 
-      <main className="pt-24 pb-12 px-4 md:px-12 max-w-7xl mx-auto">
+      {/* Onboarding Warning Banner */}
+      {(!isProfileComplete || !hasResume) && (
+        <div className="fixed top-16 left-0 right-0 z-50 bg-amber-50 border-b-2 border-amber-400">
+          <div className="max-w-7xl mx-auto px-4 md:px-12 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center gap-2 text-amber-700 font-bold text-sm shrink-0">
+              <AlertTriangle className="w-4 h-4" />
+              {routeAlert || "Complete your profile to start swapping skills!"}
+            </div>
+            <div className="flex items-center gap-4 ml-auto text-xs font-semibold uppercase tracking-widest">
+              <span className={`flex items-center gap-1 ${isProfileComplete ? 'text-green-600' : 'text-amber-600'}`}>
+                {isProfileComplete ? '✓' : '①'} Profile
+              </span>
+              <ChevronRight className="w-3 h-3 text-gray-400" />
+              <span className={`flex items-center gap-1 ${hasResume ? 'text-green-600' : 'text-amber-600'}`}>
+                {hasResume ? '✓' : '②'} Resume
+              </span>
+              <ChevronRight className="w-3 h-3 text-gray-400" />
+              <span className="text-gray-400">③ Start Swap</span>
+            </div>
+            {!hasResume && isProfileComplete && (
+              <button
+                onClick={() => navigate('/resume')}
+                className="ml-2 px-4 py-1 bg-black text-white text-xs uppercase tracking-widest hover:bg-gray-800 transition-colors shrink-0"
+              >
+                Go to Resume →
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <main className="pt-24 pb-12 px-4 md:px-12 max-w-7xl mx-auto" style={{ paddingTop: (!isProfileComplete || !hasResume) ? '7rem' : '' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -266,157 +268,83 @@ const Profile = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] bg-black/95 text-white overflow-y-auto"
           >
-            <div className="min-h-screen flex flex-col max-w-5xl mx-auto p-6 md:p-12">
-              {/* Header */}
-              <div className="flex justify-between items-center mb-16">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 border border-white/20 flex items-center justify-center font-serif text-xl">
-                    {currentStep}
-                  </div>
-                  <div className="uppercase tracking-[0.2em] text-sm text-gray-400">
-                    Editing Profile
-                  </div>
+            <div className="min-h-screen flex flex-col max-w-4xl mx-auto p-6 md:p-12 relative">
+              {/* Sticky Header */}
+              <div className="sticky top-0 bg-black/95 py-6 z-10 flex justify-between items-center border-b border-white/10 mb-12">
+                <div className="uppercase tracking-[0.2em] text-sm text-gray-400 font-bold hidden md:block">
+                  Update Dossier
                 </div>
-                <Button
-                  variant="ghost"
-                  onClick={() => setIsEditing(false)}
-                  className="text-white hover:text-white/50 uppercase tracking-widest text-xs"
-                >
-                  Close <X className="ml-2 w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-4 ml-auto">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setIsEditing(false)}
+                    className="text-white hover:text-white/50 uppercase tracking-widest text-xs"
+                  >
+                    Discard <X className="ml-2 w-4 h-4" />
+                  </Button>
+                  <Button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-white text-black hover:bg-gray-200 rounded-none uppercase tracking-widest text-xs h-12 px-8 font-bold"
+                  >
+                    {saving ? <Loader2 className="animate-spin" /> : "Save Profile"}
+                  </Button>
+                </div>
               </div>
 
-              {/* Step Content */}
-              <div className="flex-1 flex flex-col justify-center max-w-3xl mx-auto w-full space-y-12">
-                <div className="space-y-2 text-center mb-8">
-                  <h2 className="font-serif text-4xl md:text-5xl font-bold">
-                    {currentStep === 1 && "Basic Information"}
-                    {currentStep === 2 && "About Yourself"}
-                    {currentStep === 3 && "Skills & Goals"}
-                    {currentStep === 4 && "Preferences"}
-                  </h2>
-                  <p className="text-gray-400 text-lg font-light">
-                    {currentStep === 1 && "Let's start with the essentials."}
-                    {currentStep === 2 && "Tell the world who you are."}
-                    {currentStep === 3 && "Where are you now, and where are you going?"}
-                    {currentStep === 4 && "How do you work best?"}
-                  </p>
+              {/* Scrollable Form */}
+              <div className="flex-1 flex flex-col w-full space-y-16 pb-20">
+
+                {/* Section 1 */}
+                <div className="space-y-8">
+                  <h3 className="font-serif text-3xl font-bold border-b border-white/20 pb-4">Basic Information</h3>
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {renderEditField("First Name", "firstName", "Jane")}
+                    {renderEditField("Last Name", "lastName", "Doe")}
+                  </div>
+                  {renderEditField("Location", "location", "City, Country")}
+                  <EditField
+                    label="Profile Image URL"
+                    value={profile?.profileImageUrl}
+                    onChange={(val) => setProfile(prev => prev ? ({ ...prev, profileImageUrl: val }) : null)}
+                    placeholder="https://example.com/avatar.jpg"
+                  />
                 </div>
 
-                <motion.div
-                  key={currentStep}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-8"
-                >
-                  {currentStep === 1 && (
-                    <>
-                      <div className="grid grid-cols-2 gap-8">
-                        {renderEditField("First Name", "firstName", "Jane")}
-                        {renderEditField("Last Name", "lastName", "Doe")}
-                      </div>
-                      {renderEditField("Location", "location", "City, Country")}
-                      <EditField
-                        label="Profile Image"
-                        value={profile?.profileImageUrl?.startsWith('data:') ? '' : profile?.profileImageUrl}
-                        onChange={(val) => setProfile(prev => prev ? ({ ...prev, profileImageUrl: val }) : null)}
-                        placeholder="Image URL or Upload Below"
-                      />
-                      <div className="border border-white/10 p-4 text-center hover:bg-white/5 transition-colors cursor-pointer relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                setProfile(prev => prev ? ({ ...prev, profileImageUrl: reader.result as string }) : null);
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                          className="absolute inset-0 opacity-0 cursor-pointer"
-                        />
-                        <span className="text-xs uppercase tracking-widest text-gray-400">Click to Upload Photo</span>
-                      </div>
-                    </>
-                  )}
-
-                  {currentStep === 2 && (
-                    <>
-                      {renderEditField("Bio", "bio", "Tell your story...", "textarea", true)}
-                      <div className="grid grid-cols-2 gap-8">
-                        {renderEditField("LinkedIn", "linkedinUrl", "URL")}
-                        {renderEditField("Website", "website", "URL")}
-                      </div>
-                      {renderEditField("Interests", "interests", "Comma separated tags", "text", true)}
-                    </>
-                  )}
-
-                  {currentStep === 3 && (
-                    <>
-                      {renderEditField("Current Skills", "skills", "e.g. React, Java")}
-                      {renderEditField("Target Skills", "skillsToLearn", "e.g. Python, AI")}
-                      <div className="grid grid-cols-2 gap-8">
-                        {renderEditField("Goal", "learningGoal", "Mastery")}
-                        {renderEditField("Timeline", "goalTimeline", "3 Months")}
-                      </div>
-                    </>
-                  )}
-
-                  {currentStep === 4 && (
-                    <>
-                      <div className="grid grid-cols-2 gap-8">
-                        {renderEditField("Weekly Hours", "hoursPerWeek", "10", "number")}
-                        {renderEditField("Timezone", "timezone", "UTC")}
-                      </div>
-                      {renderEditField("Availability", "availabilitySchedule", "e.g. Weekends")}
-                      {renderEditField("Method", "preferredLearningMethod", "Visual, Audio...")}
-                    </>
-                  )}
-
-                </motion.div>
-              </div>
-
-              {/* Footer / Navigation */}
-              <div className="mt-16 border-t border-white/10 pt-8 flex justify-between items-center">
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4].map(step => (
-                    <div key={step} onClick={() => setCurrentStep(step)} className={`w-3 h-3 rounded-full cursor-pointer transition-colors ${currentStep === step ? 'bg-white' : 'bg-white/20 hover:bg-white/40'}`} />
-                  ))}
+                {/* Section 2 */}
+                <div className="space-y-8">
+                  <h3 className="font-serif text-3xl font-bold border-b border-white/20 pb-4">Professional Details</h3>
+                  {renderEditField("Bio", "bio", "Tell your story...", "textarea", true)}
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {renderEditField("LinkedIn", "linkedinUrl", "https://linkedin.com/in/...")}
+                    {renderEditField("GitHub", "githubUrl", "https://github.com/...")}
+                  </div>
+                  {renderEditField("Website", "website", "https://...", "text", true)}
+                  {renderEditField("Interests / Domain", "interests", "React, AI, Design...", "text", true)}
                 </div>
 
-                <div className="flex gap-6">
-                  {currentStep > 1 && (
-                    <Button
-                      variant="ghost"
-                      onClick={() => setCurrentStep(currentStep - 1)}
-                      className="text-white uppercase tracking-widest text-xs h-12 px-6"
-                    >
-                      Previous
-                    </Button>
-                  )}
-
-                  {currentStep < totalSteps ? (
-                    <Button
-                      onClick={() => setCurrentStep(currentStep + 1)}
-                      className="bg-white text-black hover:bg-gray-200 rounded-none uppercase tracking-widest text-xs h-12 px-8 font-bold"
-                    >
-                      Next Step
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleSave}
-                      disabled={saving}
-                      className="bg-white text-black hover:bg-gray-200 rounded-none uppercase tracking-widest text-xs h-12 px-8 font-bold"
-                    >
-                      {saving ? <Loader2 className="animate-spin" /> : "Save Dossier"}
-                    </Button>
-                  )}
+                {/* Section 3 */}
+                <div className="space-y-8">
+                  <h3 className="font-serif text-3xl font-bold border-b border-white/20 pb-4">Skills & Goals</h3>
+                  {renderEditField("Current Skills", "skills", "What do you teach?")}
+                  {renderEditField("Target Skills", "skillsToLearn", "What do you want to learn?")}
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {renderEditField("Goal Focus", "learningGoal", "e.g. Mastery or Casual")}
+                    {renderEditField("Timeline", "goalTimeline", "e.g. 3 Months")}
+                  </div>
                 </div>
+
+                {/* Section 4 */}
+                <div className="space-y-8">
+                  <h3 className="font-serif text-3xl font-bold border-b border-white/20 pb-4">Availability</h3>
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {renderEditField("Weekly Hours", "hoursPerWeek", "10", "number")}
+                    {renderEditField("Timezone", "timezone", "UTC")}
+                  </div>
+                  {renderEditField("Availability Schedule", "availabilitySchedule", "e.g. Weekends")}
+                  {renderEditField("Learning Method", "preferredLearningMethod", "e.g. Visual, Audio, Pair Programming")}
+                </div>
+
               </div>
             </div>
           </motion.div>

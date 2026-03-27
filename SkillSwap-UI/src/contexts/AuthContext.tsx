@@ -1,10 +1,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { authApi, profileApi, getAuthToken, setAuthToken, UserProfile } from "@/lib/api";
+import { authApi, profileApi, resumeApi, getAuthToken, setAuthToken, UserProfile } from "@/lib/api";
 
 interface AuthContextValue {
   isAuthenticated: boolean;
   user: { email: string } | null;
   profile: UserProfile | null;
+  hasResume: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
@@ -19,8 +20,18 @@ const STORAGE_KEY = "skillswap_auth_user";
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [hasResume, setHasResume] = useState<boolean>(false);
   const [hasToken, setHasToken] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const checkResumeStatus = async () => {
+    try {
+      const exp = await resumeApi.getExperience();
+      setHasResume(exp && exp.length > 0);
+    } catch {
+      setHasResume(false);
+    }
+  };
 
   useEffect(() => {
     const initAuth = async () => {
@@ -32,10 +43,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           try {
             const userData = JSON.parse(stored);
             setUser(userData);
-            // Try to fetch profile
+            // Try to fetch profile & resume
             try {
               const userProfile = await profileApi.getProfile();
               setProfile(userProfile);
+              await checkResumeStatus();
             } catch {
               // Profile might not exist yet
             }
@@ -62,9 +74,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const userProfile = await profileApi.getProfile();
       setProfile(userProfile);
+      await checkResumeStatus();
     } catch (error) {
       console.error("Failed to fetch profile:", error);
       setProfile(null);
+      setHasResume(false);
     }
   };
 
@@ -104,13 +118,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setHasToken(false);
     persistUser(null);
     setProfile(null);
+    setHasResume(false);
   };
 
   const isAuthenticated = !!user || hasToken;
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, profile, loading, signIn, signUp, signOut, refreshProfile }}
+      value={{ isAuthenticated, user, profile, hasResume, loading, signIn, signUp, signOut, refreshProfile }}
     >
       {children}
     </AuthContext.Provider>

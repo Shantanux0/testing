@@ -37,7 +37,7 @@ const SignIn = () => {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Visual Side (Left) - Cinematic Image */}
-      <div className="hidden lg:relative lg:flex lg:flex-col lg:justify-between p-12 bg-black text-white overflow-hidden">
+      <div className="relative flex flex-col justify-between p-8 lg:p-12 bg-black text-white overflow-hidden min-h-[30vh] lg:min-h-screen">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
@@ -57,7 +57,7 @@ const SignIn = () => {
           <div className="w-12 h-12 flex items-center justify-center border border-white/20">
             <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <h2 className="text-4xl font-serif font-bold leading-tight tracking-tight">
+          <h2 className="text-3xl lg:text-4xl font-serif font-bold leading-tight tracking-tight">
             "Knowledge displayed is knowledge shared."
           </h2>
           <p className="text-sm uppercase tracking-widest text-gray-400">
@@ -107,8 +107,8 @@ const SignIn = () => {
             </div>
 
             {error && (
-              <div className="p-3 bg-red-50 text-red-600 text-sm border border-red-100 flex items-center gap-2">
-                <span>⚠️</span> {error}
+              <div className="text-red-500 text-xs tracking-widest uppercase font-bold flex items-center gap-2 mt-2">
+                <span>Failed:</span> {error}
               </div>
             )}
 
@@ -119,6 +119,18 @@ const SignIn = () => {
             >
               {loading ? "Authenticating..." : "Enter"}
             </Button>
+
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => {
+                setEmail("lazyleet20@gmail.com");
+                setPassword("password123");
+              }}
+              className="w-full h-14 text-sm uppercase tracking-widest font-bold rounded-none border border-gray-200 bg-white text-black hover:bg-gray-50 transition-all duration-300 flex items-center justify-center"
+            >
+              Demo Account (Python)
+            </button>
           </form>
 
           <p className="text-center text-sm text-gray-500">

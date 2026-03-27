@@ -32,8 +32,27 @@ export interface UserProfile {
   firstName?: string;
   lastName?: string;
   bio?: string;
-  skillsToLearn: string[];
-  skillsToTeach: string[];
+  profileImageUrl?: string;
+  dateOfBirth?: string;
+  phoneNumber?: string;
+  location?: string;
+  website?: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+  skills?: string;
+  interests?: string;
+  skillsToLearn?: string;
+  timezone?: string;
+  hoursPerWeek?: number;
+  availabilitySchedule?: string;
+  learningGoal?: string;
+  goalTimeline?: string;
+  teachingMotivation?: string;
+  teachingApproach?: string;
+  preferredLearningMethod?: string;
+  communicationPace?: string;
+  preferredLanguage?: string;
+  domainFocus?: string;
 }
 
 export const authApi = {
@@ -58,6 +77,49 @@ export const profileApi = {
 };
 
 
+export interface Education {
+  id?: number;
+  educationLevel: string;
+  institutionName: string;
+  boardOrUniversity?: string;
+  fieldOfStudy?: string;
+  passingYear: string;
+  scoreDetails: string;
+  proofUrl?: string;
+}
+
+export interface Experience {
+  id?: number;
+  jobTitle: string;
+  companyName: string;
+  skillName: string;
+  startDate: string;
+  endDate?: string;
+  description?: string;
+  proofUrl?: string;
+}
+
+export interface Certification {
+  id?: number;
+  certificationName: string;
+  issuingOrganization: string;
+  skillName: string;
+  issueDate: string;
+  expirationDate?: string;
+  proofUrl?: string;
+}
+
+export interface CodingStat {
+  id?: number;
+  platformName: string;
+  profileUrl?: string;
+  totalProblemsSolved?: number;
+  easySolved?: number;
+  mediumSolved?: number;
+  hardSolved?: number;
+  proofUrl?: string;
+}
+
 export const resumeApi = {
   uploadResume: (file: File) => {
     const formData = new FormData();
@@ -68,12 +130,88 @@ export const resumeApi = {
   },
   getResume: () => api.get("/resume").then((res) => res.data),
   parseResume: () => api.post("/resume/parse").then((res) => res.data),
+
+  // Detailed Resume CRUD
+  // Certifications
+  getCertifications: () => api.get("/resume/certifications").then(res => res.data),
+  createCertification: (data: any) => api.post("/resume/certifications", data).then(res => res.data),
+  updateCertification: (data: any) => api.put(`/resume/certifications/${data.id}`, data).then(res => res.data),
+  deleteCertification: (id: number) => api.delete(`/resume/certifications/${id}`),
+
+  // Coding Stats
+  getCodingStats: () => api.get("/resume/coding-stats").then(res => res.data),
+  createCodingStat: (data: any) => api.post("/resume/coding-stats", data).then(res => res.data),
+  updateCodingStat: (data: any) => api.put(`/resume/coding-stats/${data.id}`, data).then(res => res.data),
+  deleteCodingStat: (id: number) => api.delete(`/resume/coding-stats/${id}`),
+
+  // Experience
+  getExperience: () => api.get("/resume/experience").then(res => res.data),
+  createExperience: (data: any) => api.post("/resume/experience", data).then(res => res.data),
+  updateExperience: (data: any) => api.put(`/resume/experience/${data.id}`, data).then(res => res.data),
+  deleteExperience: (id: number) => api.delete(`/resume/experience/${id}`),
+
+  // Education
+  getEducation: () => api.get("/resume/education").then(res => res.data),
+  createEducation: (data: any) => api.post("/resume/education", data).then(res => res.data),
+  updateEducation: (data: any) => api.put(`/resume/education/${data.id}`, data).then(res => res.data),
+  deleteEducation: (id: number) => api.delete(`/resume/education/${id}`),
 };
+
+export interface UserAnswer {
+  questionNumber: number;
+  selectedAnswer: string;
+}
+
+export interface TestQuestion {
+  questionId: number;
+  questionNumber: number;
+  question: string;
+  options: string[];
+}
+
+export interface TestResponse {
+  testId: number;
+  skillName: string;
+  questions: TestQuestion[];
+  durationMinutes: number;
+}
+
+export interface QuestionResult {
+  questionNumber: number;
+  question: string;
+  correctAnswer: string;
+  userAnswer: string;
+  isCorrect: boolean;
+}
+
+export interface TestResultResponse {
+  resultId: number;
+  testId: number;
+  skillName: string;
+  score: number;
+  totalQuestions: number;
+  correctAnswers: number;
+  isPassed: boolean;
+  attemptDate: string;
+  questionResults: QuestionResult[];
+}
+
+export interface TestHistory {
+  testId: number;
+  skillName: string;
+  score: number;
+  totalQuestions: number;
+  isPassed: boolean;
+  testStatus: string;
+  createdAt: string;
+  testExpiresAt: number;
+}
 
 export const testApi = {
   generateTest: (skillName: string) => api.post("/test/generate", { skillName }).then((res) => res.data),
   submitTest: (testId: number, answers: any[]) => api.post("/test/submit", { testId, answers }).then((res) => res.data),
   getTestHistory: () => api.get("/test/history").then((res) => res.data),
+  getTestResult: (testId: number) => api.get(`/test/result/${testId}`).then((res) => res.data),
 };
 
 export interface SwapMatchDto {

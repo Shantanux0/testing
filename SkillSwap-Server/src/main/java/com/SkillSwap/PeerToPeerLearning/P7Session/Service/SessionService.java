@@ -8,6 +8,7 @@ import com.SkillSwap.PeerToPeerLearning.P7Session.Repository.SwapSessionReposito
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -16,11 +17,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class SessionService {
 
     private final SwapSessionRepository sessionRepository;
     private final UserAuthRepo userAuthRepo;
     private final com.SkillSwap.PeerToPeerLearning.P9Notification.Service.NotificationService notificationService;
+    private final com.SkillSwap.PeerToPeerLearning.P10Message.Service.MessageService messageService;
 
     public SessionDto requestSession(String learnerEmail, Long teacherId, String skillName) {
         UserAuthEntity learner = findUserByEmail(learnerEmail);
@@ -86,6 +89,14 @@ public class SessionService {
                     "SUCCESS",
                     session.getId(),
                     "SESSION");
+
+            // Auto-send the first message from the teacher to the learner to initialize the
+            // chat thread
+            String initialMessage = "Hi " + session.getLearner().getName() + "! I have accepted your request to learn "
+                    + session.getSkillName() + ". Let's coordinate our schedule here!";
+            messageService.sendMessage(session.getTeacher().getEmail(), session.getLearner().getId(), initialMessage,
+                    session.getId());
+
         } else if ("REJECTED".equalsIgnoreCase(status)) {
             // Teacher rejected -> Notify Learner
             notificationService.createNotification(
