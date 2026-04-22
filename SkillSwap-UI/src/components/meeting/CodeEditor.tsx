@@ -134,7 +134,7 @@ const CodeEditor = () => {
         <div className="flex-1 flex overflow-hidden">
           {/* Line Numbers */}
           <div className="w-12 bg-background/50 py-4 text-right pr-3 text-muted-foreground text-sm font-mono select-none overflow-hidden">
-            {code.split("\n").map((_, i) => (
+            {(code || "").split("\n").map((_, i) => (
               <div key={i} className="leading-6">
                 {i + 1}
               </div>

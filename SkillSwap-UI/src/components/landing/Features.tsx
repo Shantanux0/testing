@@ -36,7 +36,7 @@ const Features = () => {
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <h2 className="font-serif text-5xl md:text-6xl mb-6 tracking-tighter leading-none">
+              <h2 className="font-serif text-4xl md:text-6xl mb-6 tracking-tighter leading-none">
                 Why <br /> SkillSwap?
               </h2>
               <motion.div
@@ -45,7 +45,7 @@ const Features = () => {
                 transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
                 className="h-1 bg-black mb-8"
               />
-              <p className="text-xl text-muted-foreground font-light max-w-sm">
+              <p className="text-lg md:text-xl text-muted-foreground font-light max-w-sm">
                 A curated experience for those who value efficiency, quality, and mutual growth.
               </p>
             </motion.div>
@@ -66,8 +66,8 @@ const Features = () => {
                   {feature.number}
                 </div>
                 <div>
-                  <h3 className="text-3xl font-serif mb-3 group-hover:translate-x-2 transition-transform duration-500">{feature.title}</h3>
-                  <p className="text-lg text-muted-foreground font-light max-w-lg group-hover:text-gray-600 transition-colors duration-500">
+                  <h3 className="text-2xl md:text-3xl font-serif mb-3 group-hover:translate-x-2 transition-transform duration-500">{feature.title}</h3>
+                  <p className="text-base md:text-lg text-muted-foreground font-light max-w-lg group-hover:text-gray-600 transition-colors duration-500">
                     {feature.description}
                   </p>
                 </div>

@@ -66,6 +66,17 @@ public class TeachingController {
         return ResponseEntity.ok(Map.of("sessionId", sessionId, "completionPercent", rate));
     }
 
+    /**
+     * POST /api/sessions/{sessionId}/agenda/start-class
+     * Teacher marks the agenda as set and starts the official session.
+     */
+    @PostMapping("/{sessionId}/agenda/start-class")
+    public ResponseEntity<com.SkillSwap.PeerToPeerLearning.P7Session.Dto.SessionDto> startClass(
+            @PathVariable Long sessionId,
+            Authentication auth) {
+        return ResponseEntity.ok(agendaService.startSession(auth.getName(), sessionId));
+    }
+
     // ─── FEEDBACK ────────────────────────────────────────────
 
     /**

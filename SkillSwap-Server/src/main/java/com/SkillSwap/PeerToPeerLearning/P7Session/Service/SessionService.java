@@ -7,6 +7,7 @@ import com.SkillSwap.PeerToPeerLearning.P7Session.Entity.SwapSessionEntity;
 import com.SkillSwap.PeerToPeerLearning.P7Session.Repository.SwapSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,6 +25,7 @@ public class SessionService {
     private final UserAuthRepo userAuthRepo;
     private final com.SkillSwap.PeerToPeerLearning.P9Notification.Service.NotificationService notificationService;
     private final com.SkillSwap.PeerToPeerLearning.P10Message.Service.MessageService messageService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public SessionDto requestSession(String learnerEmail, Long teacherId, String skillName) {
         UserAuthEntity learner = findUserByEmail(learnerEmail);
@@ -106,9 +108,47 @@ public class SessionService {
                     "WARNING",
                     session.getId(),
                     "SESSION");
+        } else if ("COMPLETED".equalsIgnoreCase(status)) {
+            String systemMessage = "[SYSTEM:MEETING_ENDED]";
+            // Send system message in their chat thread
+            messageService.sendMessage(session.getTeacher().getEmail(), session.getLearner().getId(), systemMessage, session.getId());
+            
+            Long partnerId = session.getTeacher().getId().equals(user.getId()) ? session.getLearner().getId() : session.getTeacher().getId();
+            notificationService.createNotification(
+                    partnerId,
+                    "Session Ended: The meeting for " + session.getSkillName() + " has concluded. Please leave a review!",
+                    "INFO",
+                    session.getId(),
+                    "SESSION");
         }
 
         return mapToDto(session, user.getId());
+    }
+
+    public void concludeSessionInternal(Long sessionId) {
+        SwapSessionEntity session = sessionRepository.findById(sessionId)
+                .orElse(null);
+        
+        if (session != null && "IN_PROGRESS".equalsIgnoreCase(session.getStatus())) {
+            session.setStatus("COMPLETED");
+            sessionRepository.save(session);
+
+            String systemMessage = "[SYSTEM:MEETING_ENDED]";
+            messageService.sendMessage(session.getTeacher().getEmail(), session.getLearner().getId(), systemMessage, session.getId());
+            
+            notificationService.createNotification(
+                    session.getTeacher().getId(),
+                    "Session Ended: The meeting for " + session.getSkillName() + " has concluded.",
+                    "INFO",
+                    session.getId(),
+                    "SESSION");
+            notificationService.createNotification(
+                    session.getLearner().getId(),
+                    "Session Ended: The meeting for " + session.getSkillName() + " has concluded.",
+                    "INFO",
+                    session.getId(),
+                    "SESSION");
+        }
     }
 
     public List<SessionDto> getMySessions(String email) {
@@ -121,6 +161,26 @@ public class SessionService {
     private UserAuthEntity findUserByEmail(String email) {
         return userAuthRepo.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    }
+
+    public SessionDto startSession(String userEmail, Long sessionId) {
+        UserAuthEntity user = findUserByEmail(userEmail);
+        SwapSessionEntity session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Session not found"));
+
+        if (!session.getTeacher().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only teacher can start the session");
+        }
+
+        session.setStatus("IN_PROGRESS");
+        session = sessionRepository.save(session);
+        broadcastSessionUpdate(sessionId);
+
+        return mapToDto(session, user.getId());
+    }
+
+    private void broadcastSessionUpdate(Long sessionId) {
+        messagingTemplate.convertAndSend("/topic/session/" + sessionId, "UPDATE");
     }
 
     private SessionDto mapToDto(SwapSessionEntity entity, Long currentUserId) {

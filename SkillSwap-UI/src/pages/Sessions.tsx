@@ -132,12 +132,12 @@ const Sessions = () => {
 
   return (
     <MainLayout>
-      <div className="p-6 lg:p-8 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Session Management</h1>
+      <div className="p-4 md:p-8 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-6">
+          <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tighter">Sessions</h1>
           <Dialog open={requestDialogOpen} onOpenChange={setRequestDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full md:w-auto rounded-none bg-black text-white uppercase tracking-widest text-xs h-12 px-8">
                 <Plus className="w-4 h-4 mr-2" />
                 Request Session
               </Button>
@@ -224,16 +224,16 @@ const Sessions = () => {
           </Dialog>
         </div>
 
-        <Tabs defaultValue="all" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="all">All Sessions</TabsTrigger>
-            <TabsTrigger value="pending">
+        <Tabs defaultValue="all" className="space-y-8">
+          <TabsList className="bg-transparent border-b border-gray-100 rounded-none w-full justify-start h-auto p-0 mb-8 overflow-x-auto overflow-y-hidden flex-nowrap shrink-0 pb-1">
+            <TabsTrigger value="all" className="rounded-none border-b-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-transparent uppercase tracking-widest text-[10px] pb-4 px-6 md:px-8">All</TabsTrigger>
+            <TabsTrigger value="pending" className="rounded-none border-b-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-transparent uppercase tracking-widest text-[10px] pb-4 px-6 md:px-8">
               Pending ({pendingSessions.length})
             </TabsTrigger>
-            <TabsTrigger value="active">
+            <TabsTrigger value="active" className="rounded-none border-b-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-transparent uppercase tracking-widest text-[10px] pb-4 px-6 md:px-8">
               Active ({activeSessions.length})
             </TabsTrigger>
-            <TabsTrigger value="completed">
+            <TabsTrigger value="completed" className="rounded-none border-b-2 border-transparent data-[state=active]:border-black data-[state=active]:bg-transparent uppercase tracking-widest text-[10px] pb-4 px-6 md:px-8">
               Completed ({completedSessions.length})
             </TabsTrigger>
           </TabsList>
@@ -293,15 +293,15 @@ const SessionList = ({ sessions, getStatusBadge, onUpdateStatus }: SessionListPr
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {sessions.map((session) => (
-        <Card key={session.sessionId}>
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <BookOpen className="w-5 h-5 text-primary" />
-                  <h3 className="font-semibold text-lg">{session.skillName}</h3>
+        <Card key={session.sessionId} className="rounded-none border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="p-5 md:p-8">
+            <div className="flex flex-col md:flex-row items-start justify-between gap-6">
+              <div className="flex-1 space-y-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <BookOpen className="w-5 h-5 text-black" />
+                  <h3 className="font-serif text-xl md:text-2xl font-bold tracking-tight">{session.skillName}</h3>
                   {getStatusBadge(session.status)}
                 </div>
                 <div className="space-y-1 text-sm text-muted-foreground">
@@ -325,19 +325,21 @@ const SessionList = ({ sessions, getStatusBadge, onUpdateStatus }: SessionListPr
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto">
                 {session.status === "REQUESTED" && session.role === "TEACHER" && (
                   <>
                     <Button
                       size="sm"
                       onClick={() => onUpdateStatus(session.sessionId, "ACCEPTED")}
+                      className="flex-1 md:flex-none h-10 md:h-12 bg-black text-white uppercase tracking-widest text-[10px] rounded-none px-6"
                     >
                       Accept
                     </Button>
                     <Button
                       size="sm"
-                      variant="destructive"
+                      variant="outline"
                       onClick={() => onUpdateStatus(session.sessionId, "REJECTED")}
+                      className="flex-1 md:flex-none h-10 md:h-12 border-gray-200 text-gray-500 uppercase tracking-widest text-[10px] rounded-none px-6"
                     >
                       Reject
                     </Button>
@@ -356,7 +358,7 @@ const SessionList = ({ sessions, getStatusBadge, onUpdateStatus }: SessionListPr
                         });
                         window.open(`/teaching-room?${params}`, "_blank");
                       }}
-                      className="rounded-none bg-black text-white uppercase tracking-widest text-xs h-8 px-4"
+                      className="flex-1 md:flex-none h-10 md:h-12 bg-black text-white uppercase tracking-widest text-[10px] rounded-none px-6"
                     >
                       Enter Room
                     </Button>
@@ -364,8 +366,9 @@ const SessionList = ({ sessions, getStatusBadge, onUpdateStatus }: SessionListPr
                       size="sm"
                       variant="outline"
                       onClick={() => onUpdateStatus(session.sessionId, "COMPLETED")}
+                      className="flex-1 md:flex-none h-10 md:h-12 border-gray-200 text-gray-500 uppercase tracking-widest text-[10px] rounded-none px-6"
                     >
-                      Mark Complete
+                      Complete
                     </Button>
                   </>
                 )}
@@ -374,6 +377,7 @@ const SessionList = ({ sessions, getStatusBadge, onUpdateStatus }: SessionListPr
                     size="sm"
                     variant="destructive"
                     onClick={() => onUpdateStatus(session.sessionId, "CANCELLED")}
+                    className="flex-1 md:flex-none h-10 md:h-12 uppercase tracking-widest text-[10px] rounded-none px-6"
                   >
                     Cancel
                   </Button>

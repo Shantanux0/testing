@@ -58,7 +58,7 @@ const timeAgo = (iso: string) => {
   return `${Math.floor(hrs / 24)}d ago`;
 };
 
-const initials = (name: string) => name?.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "??";
+const initials = (name: string) => (name || "").split(" ").map(w => w[0]).filter(Boolean).join("").toUpperCase().slice(0, 2) || "??";
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const Messages = () => {
@@ -216,6 +216,15 @@ const Messages = () => {
           >
             Enter Room
           </button>
+        </div>
+      );
+    }
+
+    if (msg.content === "[SYSTEM:MEETING_ENDED]") {
+      return (
+        <div className="flex flex-col items-center gap-2 p-2 w-full">
+          <span className="text-sm font-bold text-red-500">Meeting Ended</span>
+          <span className="text-xs text-gray-500">The session has been concluded.</span>
         </div>
       );
     }

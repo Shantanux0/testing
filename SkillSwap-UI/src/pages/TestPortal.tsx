@@ -113,7 +113,7 @@ const TestPortal = () => {
   };
 
   const handleAnswer = (questionId: number, fullOptionText: string) => {
-    const optionLetter = fullOptionText.charAt(0);
+    const optionLetter = (fullOptionText || " ").charAt(0);
     setAnswers(prev => ({ ...prev, [questionId]: optionLetter }));
   };
 
@@ -199,8 +199,8 @@ const TestPortal = () => {
     return (
       <div className="max-w-4xl mx-auto space-y-16">
         <div className="text-center space-y-6">
-          <h1 className="font-serif text-5xl md:text-8xl font-bold tracking-tighter">Skill Validation</h1>
-          <p className="text-gray-500 text-lg max-w-xl mx-auto tracking-wide">
+          <h1 className="font-serif text-4xl md:text-8xl font-bold tracking-tighter leading-none">Skill Validation</h1>
+          <p className="text-gray-500 text-base md:text-lg max-w-xl mx-auto tracking-wide">
             Prove your mastery. Earn your badge. Unlock teaching privileges.
           </p>
           <div className="flex justify-center gap-4 pt-4">
@@ -227,14 +227,14 @@ const TestPortal = () => {
                 value={skillName}
                 onChange={(e) => setSkillName(e.target.value)}
                 placeholder="e.g. Java, React, Python"
-                className="text-center text-4xl font-serif border-0 border-b border-gray-300 rounded-none bg-transparent focus:border-black h-20 shadow-none text-black placeholder:text-gray-300 transition-all focus:ring-0"
+                className="text-center text-2xl md:text-4xl font-serif border-0 border-b border-gray-300 rounded-none bg-transparent focus:border-black h-16 md:h-20 shadow-none text-black placeholder:text-gray-300 transition-all focus:ring-0"
               />
             </div>
 
             <Button
               onClick={handleStartTest}
               disabled={loading}
-              className="h-16 px-12 bg-black text-white hover:bg-gray-800 rounded-none text-sm uppercase tracking-[0.2em] transition-transform hover:scale-105"
+              className="w-full md:w-auto h-14 md:h-16 px-12 bg-black text-white hover:bg-gray-800 rounded-none text-xs md:text-sm uppercase tracking-[0.2em] transition-transform hover:scale-105"
             >
               {loading ? <RotateCw className="animate-spin" /> : "Initialize Assessment"}
             </Button>
@@ -291,45 +291,45 @@ const TestPortal = () => {
     return (
       <div className="max-w-4xl mx-auto w-full h-full flex flex-col justify-center min-h-[80vh]">
         {/* Header */}
-        <div className="flex justify-between items-end border-b-2 border-black pb-6 mb-16">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-red-500 mb-2 animate-pulse">Strict Mode Active</div>
-            <h1 className="font-serif text-4xl font-bold">{activeTest.skillName}</h1>
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-end border-b-2 border-black pb-6 mb-12 md:mb-16 gap-6">
+          <div className="text-center md:text-left">
+            <div className="text-[10px] md:text-xs uppercase tracking-widest text-red-500 mb-2 animate-pulse">Strict Mode Active</div>
+            <h1 className="font-serif text-3xl md:text-4xl font-bold uppercase">{activeTest.skillName}</h1>
           </div>
-          <div className="flex items-center gap-4 font-mono text-3xl">
-            <Clock className="w-6 h-6" />
+          <div className="flex items-center gap-4 font-mono text-2xl md:text-3xl">
+            <Clock className="w-5 h-5 md:w-6 md:h-6" />
             {formatTime(timeLeft)}
           </div>
         </div>
 
         {/* Question */}
         <div className="flex-1">
-          <div className="mb-12">
-            <span className="text-xs font-bold bg-black text-white px-3 py-1 mb-6 inline-block tracking-widest">
+          <div className="mb-8 md:mb-12">
+            <span className="text-[10px] font-bold bg-black text-white px-3 py-1 mb-4 md:mb-6 inline-block tracking-widest">
               QUESTION {currentQuestionIndex + 1} / {activeTest.questions.length}
             </span>
-            <h2 className="text-3xl md:text-4xl font-serif leading-relaxed">
+            <h2 className="text-2xl md:text-4xl font-serif leading-tight md:leading-relaxed">
               {currentQ.question}
             </h2>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {currentQ.options.map((opt, idx) => {
-              const letter = opt.charAt(0); // "A"
+              const letter = (opt || " ").charAt(0); // "A"
               const isSelected = answers[currentQ.questionNumber || 0] === letter;
 
               return (
                 <button
                   key={idx}
                   onClick={() => handleAnswer(currentQ.questionNumber || 0, opt)}
-                  className={`w-full text-left p-6 border transition-all duration-300 group
+                  className={`w-full text-left p-4 md:p-6 border transition-all duration-300 group
                                     ${isSelected
-                      ? 'bg-black text-white border-black scale-[1.02]'
+                      ? 'bg-black text-white border-black scale-[1.01] md:scale-[1.02]'
                       : 'bg-white border-gray-200 hover:border-black hover:bg-gray-50 text-black'
                     }`}
                 >
-                  <span className={`mr-6 font-mono text-sm tracking-widest ${isSelected ? 'opacity-100' : 'text-gray-400'}`}>0{idx + 1}</span>
-                  {opt}
+                  <span className={`mr-4 md:mr-6 font-mono text-xs md:text-sm tracking-widest ${isSelected ? 'opacity-100' : 'text-gray-400'}`}>0{idx + 1}</span>
+                  <span className="text-sm md:text-base">{opt}</span>
                 </button>
               )
             })}
@@ -462,22 +462,22 @@ const TestPortal = () => {
     <div className="min-h-screen bg-white text-black selection:bg-black selection:text-white font-sans relative">
 
       {/* Top Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 text-black bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="flex items-center gap-8">
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-8 py-4 md:py-6 text-black bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="flex items-center gap-4 md:gap-8">
           {/* Logo - Navigates to Home */}
-          <Logo className="text-black" />
+          <Logo className="text-black scale-90 md:scale-100" />
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="hidden md:block text-xs uppercase tracking-widest opacity-50">
-            {mode === 'test' ? 'Assessment in Progress' : 'Test Portal'}
+        <div className="flex items-center gap-4 md:gap-6">
+          <div className="hidden sm:block text-[10px] md:text-xs uppercase tracking-widest opacity-50">
+            {mode === 'test' ? 'Assessment' : 'Test Portal'}
           </div>
-          <div className="w-[1px] h-4 bg-black/20 mx-2" />
+          <div className="hidden sm:block w-[1px] h-4 bg-black/20" />
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-xs uppercase tracking-widest hover:text-black transition-colors"
+            className="flex items-center gap-2 text-[10px] md:text-xs uppercase tracking-widest hover:text-black transition-colors"
           >
-            Exit <div className="w-8 h-[1px] bg-black" />
+            Exit <div className="hidden sm:block w-8 h-[1px] bg-black" />
           </button>
         </div>
       </nav>

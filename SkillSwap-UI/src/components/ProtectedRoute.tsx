@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, profile: hasProfile, hasResume, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -27,7 +27,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const isResumeRoute = location.pathname.startsWith("/resume");
 
   if (!isProfileRoute && !isResumeRoute) {
-    const { profile: hasProfile, hasResume } = useAuth();
 
     // 1. Check Profile Completion
     const isProfileComplete = hasProfile &&

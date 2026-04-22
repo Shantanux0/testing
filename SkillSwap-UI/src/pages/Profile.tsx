@@ -131,27 +131,27 @@ const Profile = () => {
 
       {/* Onboarding Warning Banner */}
       {(!isProfileComplete || !hasResume) && (
-        <div className="fixed top-16 left-0 right-0 z-50 bg-amber-50 border-b-2 border-amber-400">
+        <div className="fixed top-14 md:top-16 left-0 right-0 z-[55] bg-amber-50 border-b-2 border-amber-400">
           <div className="max-w-7xl mx-auto px-4 md:px-12 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="flex items-center gap-2 text-amber-700 font-bold text-sm shrink-0">
-              <AlertTriangle className="w-4 h-4" />
-              {routeAlert || "Complete your profile to start swapping skills!"}
+            <div className="flex items-center gap-2 text-amber-700 font-bold text-xs md:text-sm shrink-0">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span className="truncate">{routeAlert || "Complete your profile!"}</span>
             </div>
-            <div className="flex items-center gap-4 ml-auto text-xs font-semibold uppercase tracking-widest">
-              <span className={`flex items-center gap-1 ${isProfileComplete ? 'text-green-600' : 'text-amber-600'}`}>
-                {isProfileComplete ? '✓' : '①'} Profile
+            <div className="flex items-center gap-3 md:gap-4 ml-0 sm:ml-auto text-[9px] md:text-xs font-semibold uppercase tracking-widest overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+              <span className={`flex items-center gap-1 shrink-0 ${isProfileComplete ? 'text-green-600' : 'text-amber-600'}`}>
+                {isProfileComplete ? '✓' : '1'} Profile
               </span>
-              <ChevronRight className="w-3 h-3 text-gray-400" />
-              <span className={`flex items-center gap-1 ${hasResume ? 'text-green-600' : 'text-amber-600'}`}>
-                {hasResume ? '✓' : '②'} Resume
+              <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
+              <span className={`flex items-center gap-1 shrink-0 ${hasResume ? 'text-green-600' : 'text-amber-600'}`}>
+                {hasResume ? '✓' : '2'} Resume
               </span>
-              <ChevronRight className="w-3 h-3 text-gray-400" />
-              <span className="text-gray-400">③ Start Swap</span>
+              <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
+              <span className="text-gray-400 shrink-0">3 Start</span>
             </div>
             {!hasResume && isProfileComplete && (
               <button
                 onClick={() => navigate('/resume')}
-                className="ml-2 px-4 py-1 bg-black text-white text-xs uppercase tracking-widest hover:bg-gray-800 transition-colors shrink-0"
+                className="w-full sm:w-auto sm:ml-2 px-4 py-2 bg-black text-white text-[10px] uppercase tracking-widest hover:bg-gray-800 transition-colors shrink-0"
               >
                 Go to Resume →
               </button>
@@ -168,23 +168,24 @@ const Profile = () => {
           className="space-y-12"
         >
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row justify-between items-start border-b border-black/10 pb-12 gap-8">
-            <div className="flex gap-8 items-center">
-              <div className="relative group">
-                <div className="w-32 h-32 md:w-40 md:h-40 bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
+          <div className="flex flex-col lg:flex-row justify-between items-center lg:items-start border-b border-black/10 pb-12 gap-8 text-center lg:text-left">
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center lg:items-start w-full md:w-auto">
+              <div className="relative group shrink-0">
+                <div className="w-40 h-40 md:w-48 md:h-48 bg-gray-100 border border-gray-200 overflow-hidden flex items-center justify-center">
                   {profile?.profileImageUrl ? (
                     <img src={profile.profileImageUrl} alt="Profile" className="w-full h-full object-cover grayscale contrast-125" />
                   ) : (
-                    <User className="w-16 h-16 text-gray-300" />
+                    <User className="w-20 h-20 text-gray-300" />
                   )}
                 </div>
               </div>
-              <div>
-                <h1 className="font-serif text-4xl md:text-6xl font-bold tracking-tighter loading-none">
-                  {profile?.firstName} <span className="text-gray-400">{profile?.lastName}</span>
+              <div className="space-y-4">
+                <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter leading-[0.9]">
+                  {profile?.firstName} <br className="hidden md:block" />
+                  <span className="text-gray-400">{profile?.lastName}</span>
                 </h1>
-                <div className="flex items-center gap-4 mt-2 text-sm uppercase tracking-widest text-gray-500 font-medium">
-                  <span className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {profile?.location || "Location N/A"}</span>
+                <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-[10px] md:text-sm uppercase tracking-widest text-gray-500 font-medium">
+                  <span className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {profile?.location || "Location Unknown"}</span>
                   <span className="flex items-center gap-2 text-black font-bold bg-black/5 px-2 py-1"><CheckCircle2 className="w-4 h-4 text-green-600" /> VERIFIED</span>
                 </div>
               </div>
@@ -192,7 +193,7 @@ const Profile = () => {
 
             <Button
               onClick={() => setIsEditing(true)}
-              className="rounded-none bg-black text-white hover:bg-gray-800 px-8 py-6 uppercase tracking-widest text-xs h-auto"
+              className="w-full lg:w-auto rounded-none bg-black text-white hover:bg-gray-800 px-10 py-6 uppercase tracking-widest text-xs h-auto shadow-xl"
             >
               <Edit2 className="w-4 h-4 mr-2" /> Edit Dossier
             </Button>
@@ -232,7 +233,7 @@ const Profile = () => {
                   {profile?.bio || "No biography provided yet."}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-2">
-                  {profile?.interests?.split(',').map((tag, i) => (
+                  {(profile?.interests || "").split(',').filter(tag => tag.trim() !== '').map((tag, i) => (
                     <span key={i} className="px-3 py-1 border border-black/10 text-xs uppercase tracking-widest font-bold hover:bg-black hover:text-white transition-colors cursor-default">
                       {tag.trim()}
                     </span>
@@ -249,7 +250,7 @@ const Profile = () => {
                 </Section>
               </div>
 
-              <div className="border-t border-black/10 pt-8 grid md:grid-cols-2 gap-8">
+              <div className="border-t border-black/10 pt-8 grid lg:grid-cols-2 gap-8 text-center md:text-left">
                 <DossierItem label="Learning Style" value={profile?.preferredLearningMethod} />
                 <DossierItem label="Communication" value={profile?.communicationPace} />
               </div>
@@ -270,24 +271,24 @@ const Profile = () => {
           >
             <div className="min-h-screen flex flex-col max-w-4xl mx-auto p-6 md:p-12 relative">
               {/* Sticky Header */}
-              <div className="sticky top-0 bg-black/95 py-6 z-10 flex justify-between items-center border-b border-white/10 mb-12">
-                <div className="uppercase tracking-[0.2em] text-sm text-gray-400 font-bold hidden md:block">
+              <div className="sticky top-0 bg-black/95 py-6 z-10 flex flex-col md:flex-row justify-between items-center border-b border-white/10 mb-8 md:mb-12 gap-4">
+                <div className="uppercase tracking-[0.2em] text-xs md:text-sm text-gray-400 font-bold">
                   Update Dossier
                 </div>
-                <div className="flex items-center gap-4 ml-auto">
+                <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto">
                   <Button
                     variant="ghost"
                     onClick={() => setIsEditing(false)}
-                    className="text-white hover:text-white/50 uppercase tracking-widest text-xs"
+                    className="flex-1 md:flex-none text-white hover:text-white/50 uppercase tracking-widest text-[10px] md:text-xs"
                   >
-                    Discard <X className="ml-2 w-4 h-4" />
+                    Discard <X className="ml-2 w-3 h-3 md:w-4 md:h-4" />
                   </Button>
                   <Button
                     onClick={handleSave}
                     disabled={saving}
-                    className="bg-white text-black hover:bg-gray-200 rounded-none uppercase tracking-widest text-xs h-12 px-8 font-bold"
+                    className="flex-1 md:flex-none bg-white text-black hover:bg-gray-200 rounded-none uppercase tracking-widest text-[10px] md:text-xs h-10 md:h-12 px-6 md:px-8 font-bold"
                   >
-                    {saving ? <Loader2 className="animate-spin" /> : "Save Profile"}
+                    {saving ? <Loader2 className="animate-spin" /> : "Save Dossier"}
                   </Button>
                 </div>
               </div>

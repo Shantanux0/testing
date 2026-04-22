@@ -70,27 +70,27 @@ const Resume = () => {
     <MainLayout>
       {/* Onboarding Warning Banner */}
       {(!isProfileComplete || !hasResume) && (
-        <div className="fixed top-16 left-0 right-0 z-50 bg-amber-50 border-b-2 border-amber-400">
+        <div className="fixed top-14 md:top-16 left-0 right-0 z-[55] bg-amber-50 border-b-2 border-amber-400 font-sans">
           <div className="max-w-7xl mx-auto px-4 md:px-12 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="flex items-center gap-2 text-amber-700 font-bold text-sm shrink-0">
-              <AlertTriangle className="w-4 h-4" />
-              {routeAlert || "Add your Experience to start swapping skills!"}
+            <div className="flex items-center gap-2 text-amber-700 font-bold text-xs md:text-sm shrink-0">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span className="truncate">{routeAlert || "Entry Required!"}</span>
             </div>
-            <div className="flex items-center gap-4 ml-auto text-xs font-semibold uppercase tracking-widest">
-              <span className={`flex items-center gap-1 ${isProfileComplete ? 'text-green-600' : 'text-amber-600'}`}>
-                {isProfileComplete ? '✓' : '①'} Profile
+            <div className="flex items-center gap-3 md:gap-4 ml-0 sm:ml-auto text-[9px] md:text-xs font-semibold uppercase tracking-widest overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+              <span className={`flex items-center gap-1 shrink-0 ${isProfileComplete ? 'text-green-600' : 'text-amber-600'}`}>
+                {isProfileComplete ? '✓' : '1'} Profile
               </span>
-              <ChevronRight className="w-3 h-3 text-gray-400" />
-              <span className={`flex items-center gap-1 ${hasResume ? 'text-green-600' : 'text-amber-600'}`}>
-                {hasResume ? '✓' : '②'} Resume
+              <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
+              <span className={`flex items-center gap-1 shrink-0 ${hasResume ? 'text-green-600' : 'text-amber-600'}`}>
+                {hasResume ? '✓' : '2'} Resume
               </span>
-              <ChevronRight className="w-3 h-3 text-gray-400" />
-              <span className="text-gray-400">③ Start Swap</span>
+              <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
+              <span className="text-gray-400 shrink-0">3 Start</span>
             </div>
             {!isProfileComplete && (
               <button
                 onClick={() => navigate('/profile')}
-                className="ml-2 px-4 py-1 bg-black text-white text-xs uppercase tracking-widest hover:bg-gray-800 transition-colors shrink-0"
+                className="w-full sm:w-auto sm:ml-2 px-4 py-2 bg-black text-white text-[10px] uppercase tracking-widest hover:bg-gray-800 transition-colors shrink-0"
               >
                 Go to Profile →
               </button>
@@ -103,18 +103,18 @@ const Resume = () => {
         <div className="max-w-5xl mx-auto p-8 lg:p-20" style={{ paddingTop: (!isProfileComplete || !hasResume) ? '6rem' : '' }}>
 
           {/* Header */}
-          <div className="flex justify-between items-end mb-24 border-b border-black pb-8">
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 md:mb-24 border-b border-black pb-8 gap-6 text-center md:text-left">
             <div>
               <motion.h1
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="font-serif text-6xl md:text-8xl font-bold tracking-tight mb-4"
+                className="font-serif text-5xl md:text-8xl font-bold tracking-tight mb-4"
               >
                 Resume
               </motion.h1>
-              <p className="text-gray-500 uppercase tracking-widest text-xs">Curated Professional History</p>
+              <p className="text-gray-500 uppercase tracking-widest text-[10px] md:text-xs">Curated Professional History</p>
             </div>
-            <Button variant="outline" className="hidden md:flex gap-2 rounded-none border-black hover:bg-black hover:text-white transition-colors uppercase tracking-widest text-xs h-12 px-6">
+            <Button variant="outline" className="w-full md:w-auto flex gap-2 rounded-none border-black hover:bg-black hover:text-white transition-colors uppercase tracking-widest text-[10px] md:text-xs h-12 px-8">
               <Download className="w-4 h-4" /> Export PDF
             </Button>
           </div>
@@ -131,19 +131,19 @@ const Resume = () => {
               </div>
               <div className="space-y-0 border-l border-black/10 ml-4 pl-12 relative">
                 {experience.map((item, i) => (
-                  <div key={item.id} className="relative pb-16 last:pb-0 group">
+                  <div key={item.id} className="relative pb-12 md:pb-16 last:pb-0 group">
                     <div className="absolute -left-[53px] top-2 w-3 h-3 bg-white border-2 border-black rounded-full group-hover:bg-black transition-colors" />
-                    <div className="grid md:grid-cols-[1fr_200px] gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4 md:gap-8">
                       <div>
-                        <h3 className="text-2xl font-bold mb-1 group-hover:text-gray-600 transition-colors">{item.jobTitle}</h3>
-                        <div className="text-lg font-serif italic text-gray-500 mb-4">{item.companyName}</div>
-                        <p className="text-gray-600 leading-relaxed max-w-2xl">{item.description || `Specialized in ${item.skillName}`}</p>
+                        <h3 className="text-xl md:text-2xl font-bold mb-1 group-hover:text-gray-600 transition-colors uppercase tracking-tight">{item.jobTitle}</h3>
+                        <div className="text-base md:text-lg font-serif italic text-gray-500 mb-4">{item.companyName}</div>
+                        <p className="text-sm md:text-gray-600 leading-relaxed max-w-2xl">{item.description || `Specialized in ${item.skillName}`}</p>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm font-bold mb-2">{item.startDate} — {item.endDate || "Present"}</div>
-                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="sm" onClick={() => { setEditingItem(item); setActiveDialog('experience'); }}>Edit</Button>
-                          <Button variant="ghost" size="sm" className="text-red-500" onClick={() => handleDelete(resumeApi.deleteExperience, item.id!)}>Delete</Button>
+                      <div className="text-left md:text-right">
+                        <div className="text-xs md:text-sm font-bold mb-2 text-black/40 md:text-black">{item.startDate} — {item.endDate || "Present"}</div>
+                        <div className="flex justify-start md:justify-end gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity mt-2 md:mt-0">
+                          <Button variant="ghost" size="sm" className="h-8 text-xs uppercase font-bold tracking-widest" onClick={() => { setEditingItem(item); setActiveDialog('experience'); }}>Edit</Button>
+                          <Button variant="ghost" size="sm" className="h-8 text-red-500 text-xs uppercase font-bold tracking-widest" onClick={() => handleDelete(resumeApi.deleteExperience, item.id!)}>Delete</Button>
                         </div>
                       </div>
                     </div>
@@ -161,15 +161,15 @@ const Resume = () => {
                 </h2>
                 <Button onClick={() => { setEditingItem(null); setActiveDialog('education'); }} variant="ghost" className="hover:bg-black hover:text-white rounded-full w-10 h-10 p-0"><Plus className="w-5 h-5" /></Button>
               </div>
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 {education.map((item) => (
-                  <div key={item.id} className="p-8 border border-gray-100 hover:border-black transition-colors duration-300 group relative">
-                    <div className="text-xs uppercase tracking-widest text-gray-500 mb-2">{item.passingYear}</div>
-                    <h3 className="text-xl font-bold mb-1">{item.educationLevel}</h3>
-                    <div className="font-serif italic text-gray-600 mb-4">{item.institutionName}</div>
-                    <div className="text-sm text-gray-500">{item.scoreDetails}</div>
+                  <div key={item.id} className="p-6 md:p-8 border border-gray-100 hover:border-black transition-colors duration-300 group relative">
+                    <div className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">{item.passingYear}</div>
+                    <h3 className="text-lg md:text-xl font-bold mb-1">{item.educationLevel}</h3>
+                    <div className="font-serif italic text-gray-600 mb-4 text-sm md:text-base">{item.institutionName}</div>
+                    <div className="text-xs md:text-sm text-gray-500">{item.scoreDetails}</div>
 
-                    <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-4 right-4 flex gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditingItem(item); setActiveDialog('education'); }}><Edit2 className="w-3 h-3" /></Button>
                       <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500" onClick={() => handleDelete(resumeApi.deleteEducation, item.id!)}><Trash2 className="w-3 h-3" /></Button>
                     </div>
@@ -179,7 +179,7 @@ const Resume = () => {
             </motion.section>
 
             {/* CERTIFICATIONS & STATS */}
-            <div className="grid md:grid-cols-2 gap-16">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
               <motion.section initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="font-serif text-2xl font-bold">Certifications</h2>

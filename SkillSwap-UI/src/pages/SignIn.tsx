@@ -37,7 +37,7 @@ const SignIn = () => {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Visual Side (Left) - Cinematic Image */}
-      <div className="relative flex flex-col justify-between p-8 lg:p-12 bg-black text-white overflow-hidden min-h-[30vh] lg:min-h-screen">
+      <div className="relative flex flex-col justify-between p-8 md:p-12 bg-black text-white overflow-hidden min-h-[30vh] lg:min-h-screen">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
@@ -57,7 +57,7 @@ const SignIn = () => {
           <div className="w-12 h-12 flex items-center justify-center border border-white/20">
             <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <h2 className="text-3xl lg:text-4xl font-serif font-bold leading-tight tracking-tight">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold leading-tight tracking-tight">
             "Knowledge displayed is knowledge shared."
           </h2>
           <p className="text-sm uppercase tracking-widest text-gray-400">
@@ -70,7 +70,7 @@ const SignIn = () => {
       <div className="flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center lg:text-left space-y-2">
-            <h1 className="text-4xl font-serif font-bold text-black tracking-tight">Welcome Back.</h1>
+            <h1 className="text-3xl md:text-4xl font-serif font-bold text-black tracking-tight">Welcome Back.</h1>
             <p className="text-gray-500 font-light">
               Access your personalized learning space.
             </p>

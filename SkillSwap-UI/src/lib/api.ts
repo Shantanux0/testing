@@ -273,3 +273,5 @@ export const notificationApi = {
   getUnreadCount: () => api.get("/notifications/unread-count").then((res) => res.data),
   markRead: (id: number) => api.put(`/notifications/${id}/read`).then((res) => res.data),
 };
+
+export default api;

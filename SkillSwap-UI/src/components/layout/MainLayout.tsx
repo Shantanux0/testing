@@ -13,7 +13,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       <AppNavbar />
 
       {/* Main Content */}
-      <main className="pt-24 min-h-screen">
+      <main className="pt-16 md:pt-24 min-h-screen">
         <AnimatePresence mode="wait">
           <motion.div
             initial={{ opacity: 0, y: 10 }}

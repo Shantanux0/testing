@@ -152,24 +152,23 @@ const CreateSwap = () => {
             </AnimatePresence>
 
             {/* Nav */}
-            <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-6 text-black">
-                <div className="flex items-center gap-8">
+            <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-8 py-4 md:py-6 text-black border-b border-black/5 bg-white/10 backdrop-blur-sm">
+                <div className="flex items-center gap-4 md:gap-8">
                     <Link to="/">
                         <Logo className="text-black" />
                     </Link>
                     {!statusModal && (
-                        <div className="hidden md:flex items-center gap-8 ml-8">
+                        <div className="hidden lg:flex items-center gap-8 ml-8">
                             <button onClick={() => setStep(1)} className={`text-xs uppercase tracking-widest hover:opacity-100 transition-opacity ${step === 1 ? 'opacity-100' : 'opacity-50'}`}>1. Seek</button>
                             <button onClick={() => setStep(2)} className={`text-xs uppercase tracking-widest hover:opacity-100 transition-opacity ${step === 2 ? 'opacity-100' : 'opacity-50'}`}>2. Offer</button>
                             <button className={`text-xs uppercase tracking-widest hover:opacity-100 transition-opacity ${step === 3 ? 'opacity-100' : 'opacity-50'}`}>3. Confirm</button>
                         </div>
                     )}
                 </div>
-                <div className="flex items-center gap-6">
-                    <button onClick={() => navigate('/dashboard')} className="text-xs uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity">Dashboard</button>
-                    <button onClick={() => navigate('/profile')} className="text-xs uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity">Profile</button>
-                    <div className="w-[1px] h-4 bg-black/20 mx-2" />
-                    <button onClick={() => navigate('/')} className="flex items-center gap-2 text-xs uppercase tracking-widest hover:text-black transition-colors">Exit <div className="w-8 h-[1px] bg-black" /></button>
+                <div className="flex items-center gap-4 md:gap-6">
+                    <button onClick={() => navigate('/dashboard')} className="text-[10px] md:text-xs uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity">Dashboard</button>
+                    <div className="hidden sm:block w-[1px] h-4 bg-black/20" />
+                    <button onClick={() => navigate('/')} className="flex items-center gap-2 text-[10px] md:text-xs uppercase tracking-widest hover:text-black transition-colors">Exit <div className="hidden sm:block w-8 h-[1px] bg-black" /></button>
                 </div>
             </nav>
 
@@ -180,11 +179,11 @@ const CreateSwap = () => {
                     {!statusModal && (
                         <>
                             {/* Stepper Dots */}
-                            <div className="flex justify-center mb-16 space-x-12">
+                            <div className="flex justify-center mb-12 md:mb-16 space-x-6 md:space-x-12">
                                 {[1, 2, 3].map((i) => (
-                                    <div key={i} className={`flex items-center gap-4 ${step >= i ? 'opacity-100' : 'opacity-40'} transition-all duration-500`}>
-                                        <div className={`w-3 h-3 rounded-full transition-all duration-500 ${step >= i ? 'bg-black shadow-[0_0_15px_rgba(0,0,0,0.1)] scale-110' : 'bg-gray-300'}`} />
-                                        <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-gray-500">
+                                    <div key={i} className={`flex items-center gap-2 md:gap-4 ${step >= i ? 'opacity-100' : 'opacity-40'} transition-all duration-500`}>
+                                        <div className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-500 ${step >= i ? 'bg-black shadow-[0_0_15px_rgba(0,0,0,0.1)] scale-110' : 'bg-gray-300'}`} />
+                                        <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.25em] text-gray-500">
                                             {i === 1 ? 'Seek' : i === 2 ? 'Offer' : 'Confirm'}
                                         </span>
                                     </div>
@@ -220,7 +219,7 @@ const CreateSwap = () => {
                                                     )}
                                                 </motion.div>
 
-                                                <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold tracking-tighter leading-[1.1] text-black">
+                                                <h1 className="text-4xl md:text-7xl lg:text-8xl font-serif font-bold tracking-tighter leading-[1.1] text-black">
                                                     {step === 1 ? (
                                                         <>What do you <br /><span className="italic text-gray-400 font-light">crave</span> to learn?</>
                                                     ) : (
@@ -231,7 +230,7 @@ const CreateSwap = () => {
 
                                             <div className="max-w-xl mx-auto relative group pt-8">
                                                 <Input
-                                                    className="relative h-24 text-4xl text-center bg-transparent border-0 border-b-2 border-gray-200 rounded-none focus:ring-0 focus:border-black placeholder:text-gray-300 transition-all duration-500 font-serif text-black focus-visible:ring-0 shadow-none px-0"
+                                                    className="relative h-16 md:h-24 text-2xl md:text-4xl text-center bg-transparent border-0 border-b-2 border-gray-200 rounded-none focus:ring-0 focus:border-black placeholder:text-gray-300 transition-all duration-500 font-serif text-black focus-visible:ring-0 shadow-none px-0"
                                                     placeholder={step === 1 ? "e.g. Photography" : "e.g. Photoshop"}
                                                     value={step === 1 ? skillToLearn : skillToTeach}
                                                     onChange={(e) => step === 1 ? setSkillToLearn(e.target.value) : setSkillToTeach(e.target.value)}
@@ -260,42 +259,42 @@ const CreateSwap = () => {
 
                                     {/* Step 3: Match Found Confirmation */}
                                     {step === 3 && matchResult && matchResult[0] && (
-                                        <div className="space-y-10 max-w-2xl mx-auto border border-gray-100 p-12 md:p-16 rounded-[2.5rem] bg-white shadow-xl relative overflow-hidden">
+                                        <div className="space-y-6 md:space-y-10 max-w-2xl mx-auto border border-gray-100 p-8 md:p-16 rounded-[1.5rem] md:rounded-[2.5rem] bg-white shadow-xl relative overflow-hidden">
                                             {/* Decorative glow inside card */}
                                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-gray-50 blur-[60px] rounded-full pointer-events-none" />
 
-                                            <div className="flex justify-center mb-8 relative z-10">
-                                                <div className="p-5 border border-green-200 rounded-2xl bg-green-50 shadow-sm">
-                                                    <CheckCircle2 className="w-10 h-10 text-green-600" />
+                                            <div className="flex justify-center mb-6 md:mb-8 relative z-10">
+                                                <div className="p-4 md:p-5 border border-green-200 rounded-xl md:rounded-2xl bg-green-50 shadow-sm">
+                                                    <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10 text-green-600" />
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-3 relative z-10">
-                                                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Perfect Match Found</h2>
-                                                <h1 className="text-4xl md:text-5xl font-serif font-bold text-black">{matchResult[0].partnerName}</h1>
+                                            <div className="space-y-3 relative z-10 text-center">
+                                                <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Match Found</h2>
+                                                <h1 className="text-3xl md:text-5xl font-serif font-bold text-black">{matchResult[0].partnerName}</h1>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-8 text-left py-10 border-y border-gray-100 relative z-10">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center md:text-left py-8 md:py-10 border-y border-gray-100 relative z-10">
                                                 <div className="space-y-2">
                                                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">They Teach</p>
-                                                    <p className="text-2xl font-serif text-black">{matchResult[0].skillITeach}</p>
+                                                    <p className="text-xl md:text-2xl font-serif text-black">{matchResult[0].skillITeach}</p>
                                                     <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-green-50 border border-green-200">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                                        <span className="text-[10px] font-bold text-green-700 uppercase tracking-widest">Expert Level Confirmed</span>
+                                                        <span className="text-[10px] font-bold text-green-700 uppercase tracking-widest">Expert Level</span>
                                                     </div>
                                                 </div>
                                                 <div className="space-y-2">
                                                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">They Want to Learn</p>
-                                                    <p className="text-2xl font-serif text-black">{matchResult[0].skillILearn}</p>
+                                                    <p className="text-xl md:text-2xl font-serif text-black">{matchResult[0].skillILearn}</p>
                                                 </div>
                                             </div>
 
-                                            <div className="pt-6 flex gap-4 justify-center relative z-10 w-full mb-2">
+                                            <div className="pt-6 flex flex-col md:flex-row gap-4 justify-center relative z-10 w-full mb-2">
                                                 <Button
                                                     size="lg"
                                                     variant="outline"
                                                     onClick={() => setStep(2)}
-                                                    className="flex-1 h-14 rounded-full bg-transparent border border-gray-200 text-black hover:bg-gray-50 hover:border-gray-300 text-[11px] uppercase tracking-widest font-semibold transition-all"
+                                                    className="w-full md:flex-1 h-12 md:h-14 rounded-none md:rounded-full bg-transparent border border-gray-200 text-black hover:bg-gray-50 hover:border-gray-300 text-[10px] md:text-[11px] uppercase tracking-widest font-semibold transition-all"
                                                 >
                                                     Back
                                                 </Button>
@@ -303,7 +302,7 @@ const CreateSwap = () => {
                                                     size="lg"
                                                     onClick={handleConfirmSwap}
                                                     disabled={loading}
-                                                    className="flex-[2] h-14 text-[11px] font-bold uppercase tracking-[0.2em] rounded-full bg-black text-white hover:bg-gray-800 transition-all duration-300 shadow-md"
+                                                    className="w-full md:flex-[2] h-12 md:h-14 rounded-none md:rounded-full bg-black text-white hover:bg-gray-800 transition-all duration-300 shadow-md text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em]"
                                                 >
                                                     {loading ? <RotateCw className="animate-spin w-4 h-4 mx-auto" /> : "Initialize Swap"}
                                                 </Button>

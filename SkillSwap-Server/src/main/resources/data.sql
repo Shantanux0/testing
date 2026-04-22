@@ -108,3 +108,17 @@ WHERE NOT EXISTS (
 
 -- Reset sequence to match the highest ID (Fix for duplicate key error)
 SELECT setval('tbl_user_auth_id_seq', (SELECT MAX(id) FROM tbl_user_auth));
+
+-- 9. Seed Demo Sessions (WHERE NOT EXISTS to prevent duplicates)
+-- Session 1: Alice (id=1) teaches Java to LazyLeet (id=2) — ACCEPTED (ready to start)
+INSERT INTO swap_sessions (id, teacher_id, learner_id, skill_name, status, created_at, updated_at)
+SELECT 1, 1, 2, 'Java', 'ACCEPTED', NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM swap_sessions WHERE id = 1);
+
+-- Session 2: David (id=3) teaches Spring Boot to Shantanu (id=4) — IN_PROGRESS
+INSERT INTO swap_sessions (id, teacher_id, learner_id, skill_name, status, created_at, updated_at)
+SELECT 2, 3, 4, 'Spring Boot', 'ACCEPTED', NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM swap_sessions WHERE id = 2);
+
+-- Reset session sequence
+SELECT setval('swap_sessions_id_seq', (SELECT COALESCE(MAX(id), 1) FROM swap_sessions));

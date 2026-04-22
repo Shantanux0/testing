@@ -10,6 +10,7 @@ import com.SkillSwap.PeerToPeerLearning.P7Session.Repository.SessionAgendaReposi
 import com.SkillSwap.PeerToPeerLearning.P7Session.Repository.SwapSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,6 +27,7 @@ public class AgendaService {
     private final SessionAgendaRepository agendaRepository;
     private final SwapSessionRepository sessionRepository;
     private final UserAuthRepo userAuthRepo;
+    private final SimpMessagingTemplate messagingTemplate;
 
     /** Teacher creates agenda items for a session */
     public List<AgendaItemDto> createAgenda(String teacherEmail, Long sessionId, CreateAgendaRequest request) {
@@ -50,9 +52,12 @@ public class AgendaService {
                         .build())
                 .collect(Collectors.toList());
 
-        return agendaRepository.saveAll(items).stream()
+        List<AgendaItemDto> result = agendaRepository.saveAll(items).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+
+        broadcastUpdate(sessionId);
+        return result;
     }
 
     /** Get all agenda items for a session */
@@ -80,7 +85,44 @@ public class AgendaService {
         item.setCompletedBy(completed ? learner : null);
         item.setCompletedAt(completed ? LocalDateTime.now() : null);
 
-        return mapToDto(agendaRepository.save(item));
+        AgendaItemDto dto = mapToDto(agendaRepository.save(item));
+        broadcastUpdate(session.getId());
+        return dto;
+    }
+
+    public com.SkillSwap.PeerToPeerLearning.P7Session.Dto.SessionDto startSession(String teacherEmail, Long sessionId) {
+        System.out.println("[AgendaService] Attempting to start session: " + sessionId + " by teacher: " + teacherEmail);
+        UserAuthEntity teacher = findUserByEmail(teacherEmail);
+        SwapSessionEntity session = findSessionById(sessionId);
+
+        // Security check
+        if (!session.getTeacher().getId().equals(teacher.getId())) {
+             System.err.println("[AgendaService] Unauthorized start attempt by: " + teacherEmail);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the teacher can start the session");
+        }
+
+        // Logic check: only allow starting if it was ACCEPTED
+        if (!"ACCEPTED".equalsIgnoreCase(session.getStatus()) && !"IN_PROGRESS".equalsIgnoreCase(session.getStatus())) {
+            System.err.println("[AgendaService] Invalid start attempt. Current status: " + session.getStatus());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session must be in ACCEPTED state to start. Current: " + session.getStatus());
+        }
+
+        session.setStatus("IN_PROGRESS");
+        session = sessionRepository.save(session);
+        broadcastUpdate(sessionId);
+
+        System.out.println("[AgendaService] Session " + sessionId + " started successfully!");
+
+        return com.SkillSwap.PeerToPeerLearning.P7Session.Dto.SessionDto.builder()
+                .sessionId(session.getId())
+                .status(session.getStatus())
+                .skillName(session.getSkillName())
+                .role("TEACHER")
+                .build();
+    }
+
+    private void broadcastUpdate(Long sessionId) {
+        messagingTemplate.convertAndSend("/topic/session/" + sessionId, "UPDATE");
     }
 
     /** Get completion percentage for a session */

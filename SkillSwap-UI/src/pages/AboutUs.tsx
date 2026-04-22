@@ -80,7 +80,7 @@ const AboutUs = () => {
                 }}
                 className={className}
             >
-                {text.split(" ").map((word, i) => (
+                {(text || "").split(" ").map((word, i) => (
                     <span key={i} className="inline-block mr-2 overflow-hidden">
                         <motion.span
                             variants={{

@@ -68,14 +68,14 @@ const Hero = () => {
             </motion.div>
 
             {/* Cinematic Heading */}
-            <motion.h1 variants={item} className="font-serif text-6xl md:text-8xl lg:text-9xl leading-[0.9] mb-8 text-primary tracking-tighter">
+            <motion.h1 variants={item} className="font-serif text-5xl md:text-8xl lg:text-9xl leading-[0.9] mb-8 text-primary tracking-tighter">
               Mastery <br />
               <span className="italic font-light opacity-60">Through</span> <br />
               Teaching.
             </motion.h1>
 
             {/* Subtitle */}
-            <motion.p variants={item} className="text-xl md:text-2xl text-muted-foreground font-light max-w-lg mx-auto lg:mx-0 mb-12 leading-relaxed">
+            <motion.p variants={item} className="text-lg md:text-2xl text-muted-foreground font-light max-w-lg mx-auto lg:mx-0 mb-12 leading-relaxed">
               An exclusive community where knowledge is currency—share expertise, gain mastery.
             </motion.p>
 
@@ -98,7 +98,7 @@ const Hero = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.5, duration: 1 }}
-            className="mt-20 flex items-center justify-center lg:justify-start gap-8"
+            className="mt-12 md:mt-20 flex items-center justify-center lg:justify-start gap-4 md:gap-8"
           >
             <div className="flex -space-x-4 grayscale opacity-70 hover:grayscale-0 transition-all duration-500">
               {[1, 2, 3, 4].map((i) => (
