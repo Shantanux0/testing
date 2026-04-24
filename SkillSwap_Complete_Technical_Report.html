@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillSwap - Complete Technical Project Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #0ea5e9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #ffffff;
+            --bg-alt: #f8fafc;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --sidebar-bg: #0f172a;
+            --sidebar-text: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            display: flex;
+        }
+
+        /* Sidebar Navigation */
+        nav {
+            width: 300px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            padding: 2rem 1.5rem;
+            position: fixed;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+        }
+
+        nav h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        nav ul {
+            list-style: none;
+        }
+
+        nav li {
+            margin-bottom: 0.5rem;
+        }
+
+        nav a {
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            transition: all 0.2s;
+            display: block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        nav a:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+            padding-left: 1.5rem;
+        }
+
+        nav .active {
+            opacity: 1;
+            background: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        main {
+            margin-left: 300px;
+            padding: 4rem 6rem;
+            width: calc(100% - 300px);
+        }
+
+        .report-header {
+            margin-bottom: 5rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 3rem;
+        }
+
+        .report-header h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 4rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .metadata {
+            display: flex;
+            gap: 3rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .metadata strong {
+            color: var(--text);
+        }
+
+        section {
+            margin-bottom: 6rem;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.25rem;
+            margin-bottom: 2rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        h2 span {
+            color: var(--primary);
+            font-size: 1rem;
+            font-weight: 700;
+            background: var(--bg-alt);
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+            color: var(--text);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background: var(--bg-alt);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .card h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            margin-bottom: 0;
+            color: var(--text-muted);
+        }
+
+        /* Code/Math Blocks */
+        .math-block {
+            background: #f1f5f9;
+            padding: 2rem;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            border-left: 6px solid var(--secondary);
+            margin: 2rem 0;
+        }
+
+        .code-snippet {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+        }
+
+        th {
+            text-align: left;
+            background: var(--bg-alt);
+            padding: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        footer {
+            margin-top: 8rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <h1>SkillSwap Tech</h1>
+        <ul>
+            <li><a href="#summary" class="active">0. Executive Summary</a></li>
+            <li><a href="#architecture">1. System Architecture</a></li>
+            <li><a href="#stack">2. Technology Stack</a></li>
+            <li><a href="#p4-test">3. AI Test Portal</a></li>
+            <li><a href="#p5-match">4. The "Swapping AI" Math</a></li>
+            <li><a href="#p8-ai">5. Two-Tier AI Strategy</a></li>
+            <li><a href="#database">6. Data Architecture</a></li>
+            <li><a href="#qa">7. Expert Q&A</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <header class="report-header">
+            <h1>SkillSwap:<br>The AI & Algorithm Deep Dive</h1>
+            <div class="metadata">
+                <div>Proprietary Engine: <strong>The Swapping AI</strong></div>
+                <div>Logic Type: <strong>Heuristic Expert System</strong></div>
+                <div>Math Model: <strong>Weighted Sum Model (WSM)</strong></div>
+            </div>
+        </header>
+
+        <section id="summary">
+            <h2><span>0</span> Executive Summary</h2>
+            <p>SkillSwap is a premium peer-to-peer learning ecosystem. While many platforms use basic search, SkillSwap uses a <strong>Proprietary Swapping AI</strong> to mathematically guarantee high-quality matches. This report focuses on the math, logic, and priorities of our internal AI engine.</p>
+        </section>
+
+        <section id="p4-test">
+            <h2><span>3</span> AI Dynamic Test Portal</h2>
+            <p>We use external LLMs (Tier 1 AI) to generate unique exams. This ensures that every teacher is verified before the Swapping AI even considers them.</p>
+            <ul>
+                <li><strong>Dynamic Generation:</strong> Questions are created on-the-fly based on skill and difficulty.</li>
+                <li><strong>Fallback Logic:</strong> A local static bank ensures 100% uptime if external AI services fail.</li>
+            </ul>
+        </section>
+
+        <section id="p5-match">
+            <h2><span>4</span> The "Swapping AI": Mathematical Deep Dive</h2>
+            <p>This is the "Heart" of the platform. It is a <strong>Heuristic Expert System</strong> built in Java. It doesn't just match keywords; it matches human compatibility.</p>
+            
+            <h3>1. The Weighted Sum Model (The Math)</h3>
+            <p>Our AI takes raw data and normalizes it to a 0-1 scale. Then, it applies the following priority matrix:</p>
+            <div class="math-block">
+                Final_Score = (Test × 0.30) + (LevelGap × 0.20) + (Goals × 0.10) + (Time × 0.10) + (Certs × 0.10) + (Reputation × 0.10) + (Style × 0.05) + (Commitment × 0.05)
+            </div>
+
+            <h3>2. Heuristic Logic Breakdown (The Logic)</h3>
+            <div class="feature-grid">
+                <div class="card">
+                    <h4>Proficiency Gap Logic</h4>
+                    <p>Our AI uses a 'Peer-to-Mentor' bias. If a teacher is 1 level above you, the score is <strong>1.0</strong>. If they are 4 levels above, the score drops to <strong>0.8</strong> because experts can be too advanced for beginners. If they are below you, the score drops to <strong>0.4</strong>.</p>
+                </div>
+                <div class="card">
+                    <h4>Goal Compatibility Logic</h4>
+                    <p>The AI matches 'Motivations'. A learner who wants 'Job Prep' is a perfect match (1.0) for a teacher who 'Loves Teaching', but a poor match (0.6) for someone just looking to 'Network'.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="p8-ai">
+            <h2><span>5</span> Two-Tier AI Strategy</h2>
+            <p>To be technically accurate, our platform uses two distinct types of AI:</p>
+            <div class="feature-grid">
+                <div class="card">
+                    <h4>Tier 1: External LLM (The Brain)</h4>
+                    <p>Uses Gemini/OpenAI for text tasks. It handles Question Generation, distractor creation, and Sentiment Analysis of feedback.</p>
+                </div>
+                <div class="card">
+                    <h4>Tier 2: Internal Swapping AI (The Matchmaker)</h4>
+                    <p>This is our proprietary logic. It uses the <strong>WSM algorithm</strong> and a <strong>Learning Loop</strong> that learns your preferences based on which teachers you interact with most.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="qa">
+            <h2><span>7</span> Expert Q&A</h2>
+            <div class="card" style="margin-bottom: 1rem;">
+                <h4>Q: Is this a Neural Network?</h4>
+                <p>A: No, this is a <strong>Heuristic Expert System</strong>. While neural networks are black boxes, our system is transparent and controllable, ensuring every match can be explained to the user.</p>
+            </div>
+            <div class="card">
+                <h4>Q: How does the AI learn?</h4>
+                <p>A: Our internal Swapping AI uses a <strong>Feedback Loop</strong>. Every time a session is completed, the AI updates the user's reputation and goal-affinity scores, refining future matches automatically.</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>SkillSwap Technical Deep Dive - April 2026</p>
+        </footer>
+    </main>
+</body>
+</html>

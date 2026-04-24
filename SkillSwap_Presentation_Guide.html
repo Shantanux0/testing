@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillSwap Presentation Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --accent: #22d3ee;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        section {
+            margin-bottom: 3rem;
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        section:hover {
+            border-color: var(--primary);
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h2::before {
+            content: '';
+            width: 8px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--primary);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        ul {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .tech-card {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .tech-card strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 1.1rem;
+        }
+
+        .qa-box {
+            background: #0f172a;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .question {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .answer {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        @media print {
+            body { background: white; color: black; padding: 0; }
+            section { border: 1px solid #ddd; break-inside: avoid; }
+            header { background: #6366f1; color: white; -webkit-print-color-adjust: exact; }
+            .tech-card { border: 1px solid #ddd; }
+            .qa-box { border: 1px solid #ddd; border-left: 4px solid #ec4899; }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-bottom: 2rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SkillSwap</h1>
+            <p class="subtitle">Presentation Guide: Technical Architecture & Core Features</p>
+        </header>
+
+        <section id="tech-stack">
+            <h2>The Tech Stack</h2>
+            <p>Our platform is built using a modern, scalable, and high-performance stack to ensure a premium user experience.</p>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <strong>Frontend</strong>
+                    React (Vite), TypeScript, Tailwind CSS, Shadcn/UI
+                </div>
+                <div class="tech-card">
+                    <strong>Backend</strong>
+                    Spring Boot 3.x, Java 17, JPA/Hibernate
+                </div>
+                <div class="tech-card">
+                    <strong>Database</strong>
+                    MySQL (Relational Data), H2 (Local Testing)
+                </div>
+                <div class="tech-card">
+                    <strong>AI & Intelligence</strong>
+                    Gemini / OpenAI (via Interface Layer)
+                </div>
+            </div>
+        </section>
+
+        <section id="core-working">
+            <h2>How It Works</h2>
+            
+            <h3>1. The "Perfect Swap" Engine</h3>
+            <p>The core of SkillSwap is our <strong>Weighted Skill Matching Algorithm</strong>. It doesn't just look for keywords; it calculates a compatibility score (0.0 to 1.0) based on:</p>
+            <ul>
+                <li><span class="highlight">Test Scores (30%):</span> Verified proficiency via our Test Portal.</li>
+                <li><span class="highlight">Proficiency Gap (20%):</span> Matches peers or mentors (1 level above).</li>
+                <li><span class="highlight">Availability (10%):</span> Real-time intersection of schedules.</li>
+                <li><span class="highlight">Goal Alignment (10%):</span> Matching learning goals with teaching motivations.</li>
+            </ul>
+
+            <h3>2. The Test Portal (Verification)</h3>
+            <p>To maintain quality, every teacher <strong>must pass a rigorous test</strong>. If they score below 10/15, they cannot list themselves as a teacher for that specific skill. This ensures that the "expertise" on our platform is real.</p>
+
+            <h3>3. Real-Time Collaboration</h3>
+            <p>Once a match is made, users can coordinate via our integrated messaging system and join a <strong>Teaching Room</strong> featuring code playgrounds and meeting agendas.</p>
+        </section>
+
+        <section id="ai-implementation">
+            <h2>Artificial Intelligence Part</h2>
+            <p>SkillSwap isn't just a wrapper; it uses AI strategically across three main areas:</p>
+            <ul>
+                <li><strong>Dynamic Question Generation:</strong> When a user starts a skill test, our <code class="highlight">AIQuestionGeneratorService</code> creates 15 unique, hard-level questions on the fly. This prevents cheating and keeps the testing fresh.</li>
+                <li><strong>Sentiment Analysis:</strong> We analyze feedback text to detect the true quality of a session, influencing the teacher's <span class="highlight">Reputation Score</span> beyond just star ratings.</li>
+                <li><strong>Recommendation Engine:</strong> A behavioral "learn" loop that tracks which types of mentors a user interacts with most, refining future suggestions.</li>
+            </ul>
+        </section>
+
+        <section id="qa">
+            <h2>Counter Questions & Answers</h2>
+            
+            <div class="qa-box">
+                <span class="question">Q1: Does your project have an LLM model integrated?</span>
+                <p class="answer">Yes, we use an interface-driven AI architecture. Currently, it's integrated with <strong>Google Gemini</strong> and <strong>OpenAI</strong>. We chose an interface-driven approach so we can swap models without changing the core business logic (Model Agnosticism).</p>
+            </div>
+
+            <div class="qa-box">
+                <span class="question">Q2: How do you handle the swapping of models?</span>
+                <p class="answer">We use the <strong>Strategy Pattern</strong> in the backend. We have an <code class="highlight">AIQuestionGeneratorService</code> interface. We can provide different implementations (GeminiImpl, OpenAIImpl) and switch them via configuration settings or load-balancing.</p>
+            </div>
+
+            <div class="qa-box">
+                <span class="question">Q3: How do you train the data for your AI?</span>
+                <p class="answer">For the MVP, we leverage <strong>Prompt Engineering</strong> on top of pre-trained LLMs. We provide the AI with a structured "System Prompt" that contains our specific constraints (e.g., JSON output format, difficulty levels, skill context). The "learning" part happens in our <strong>Recommendation Engine</strong>, where we store user interaction data to personalize future matches.</p>
+            </div>
+
+            <div class="qa-box">
+                <span class="question">Q4: What happens if the AI service is down?</span>
+                <p class="answer">We have a <strong>Static Question Bank</strong> fallback. If the AI fails to generate questions, the system automatically pulls high-quality, pre-verified questions from our database to ensure zero downtime for the user.</p>
+            </div>
+
+            <div class="qa-box">
+                <span class="question">Q5: Is the matching algorithm real-time?</span>
+                <p class="answer">Yes. When a user searches for a swap, the backend executes the weighted matching logic against all active profiles in the database, considering their latest test scores and availability schedules stored in JSON format.</p>
+            </div>
+        </section>
+
+        <div class="footer">
+            <p>SkillSwap &copy; 2026 | Prepared for Tomorrow's Presentation</p>
+        </div>
+    </div>
+</body>
+</html>
