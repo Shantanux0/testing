@@ -3,11 +3,14 @@ package com.SkillSwap.PeerToPeerLearning.P1Auth.Controller;
 import com.SkillSwap.PeerToPeerLearning.P1Auth.Dto.AuthRequest;
 import com.SkillSwap.PeerToPeerLearning.P1Auth.Dto.AuthResponse;
 import com.SkillSwap.PeerToPeerLearning.P1Auth.Dto.ResetPasswordRequest;
+import com.SkillSwap.PeerToPeerLearning.P1Auth.Entity.UserAuthEntity;
+import com.SkillSwap.PeerToPeerLearning.P1Auth.Repository.UserAuthRepo;
 import com.SkillSwap.PeerToPeerLearning.P1Auth.Service.ProfileService;
 import com.SkillSwap.PeerToPeerLearning.P1Auth.Service.impl.AppUserDetailService;
 import com.SkillSwap.PeerToPeerLearning.P1Auth.utils.JwtUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -37,11 +40,19 @@ public class AuthController {
     private final JwtUtils jwtUtil;
 
     private final ProfileService profileService;
+    private final UserAuthRepo userAuthRepo;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
             authenticate(request.getEmail(), request.getPassword());
+            
+            // Single-session: increment version to invalidate previous tokens
+            UserAuthEntity user = userAuthRepo.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            user.setTokenVersion((user.getTokenVersion() == null ? 0 : user.getTokenVersion()) + 1);
+            userAuthRepo.save(user);
+
             final UserDetails userDetails = appUserDetailsService.loadUserByUsername(request.getEmail());
             final String jwtToken = jwtUtil.generateToken(userDetails);
             ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken)

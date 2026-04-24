@@ -22,7 +22,20 @@ public class AppUserDetailService  implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         UserAuthEntity existingUser = authRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Email not found for the email: " + email));
-        return new User(existingUser.getEmail(), existingUser.getPassword(), new ArrayList<>());
+        return new CustomUserDetails(existingUser);
+    }
+
+    public static class CustomUserDetails extends User {
+        private final Integer tokenVersion;
+
+        public CustomUserDetails(UserAuthEntity entity) {
+            super(entity.getEmail(), entity.getPassword(), new ArrayList<>());
+            this.tokenVersion = entity.getTokenVersion();
+        }
+
+        public Integer getTokenVersion() {
+            return tokenVersion;
+        }
     }
 
 }

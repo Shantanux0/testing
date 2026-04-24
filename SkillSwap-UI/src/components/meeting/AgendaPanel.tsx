@@ -63,10 +63,12 @@ const AgendaPanel = ({
     if (!newTopic.trim()) return;
     setIsLoading(true);
     try {
-      // Backend expects a list/request object with items
-      await api.post(`/sessions/${sessionId}/agenda`, {
-        items: [{ topic: newTopic, description: "", orderIndex: items.length + 1 }]
-      });
+      // Backend replaces the whole list, so we must send everything
+      const updatedItems = [
+        ...items.map(it => ({ topic: it.topic, description: it.description, orderIndex: it.orderIndex })),
+        { topic: newTopic, description: "", orderIndex: items.length + 1 }
+      ];
+      await api.post(`/sessions/${sessionId}/agenda`, { items: updatedItems });
       setNewTopic("");
       fetchAgenda();
       toast.success("Agenda item added");
@@ -105,10 +107,7 @@ const AgendaPanel = ({
   };
 
   const startClass = async () => {
-    if (items.length === 0) {
-      toast.warning("Please add at least one agenda item before starting.");
-      return;
-    }
+    // No longer mandatory to have agenda items to start
     try {
       await api.post(`/sessions/${sessionId}/agenda/start-class`, {});
       onStatusChange("IN_PROGRESS");
@@ -118,8 +117,8 @@ const AgendaPanel = ({
     }
   };
 
-  const isAgendaPhase = sessionStatus === "ACCEPTED" || sessionStatus === "AGENDA_PHASE";
-  const isInProgress = sessionStatus === "IN_PROGRESS";
+  const isAgendaPhase = sessionStatus?.toUpperCase() === "ACCEPTED" || sessionStatus?.toUpperCase() === "AGENDA_PHASE";
+  const isInProgress = sessionStatus?.toUpperCase() === "IN_PROGRESS";
 
   return (
     <Card className="h-full border-none shadow-none bg-background/50 backdrop-blur-md">
@@ -133,7 +132,7 @@ const AgendaPanel = ({
                 : "Tracking progress of the session"}
             </CardDescription>
           </div>
-          {role === "TEACHER" && isAgendaPhase && (
+          {role?.toUpperCase() === "TEACHER" && isAgendaPhase && (
             <Button size="sm" onClick={startClass} className="bg-primary hover:bg-primary/90">
               <Play className="w-4 h-4 mr-2" />
               Start Class
@@ -148,7 +147,7 @@ const AgendaPanel = ({
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {role === "TEACHER" && isAgendaPhase && (
+        {role?.toUpperCase() === "TEACHER" && isAgendaPhase && (
           <div className="flex gap-2">
             <Input
               placeholder="Add a topic..."
@@ -178,7 +177,7 @@ const AgendaPanel = ({
                     <Checkbox
                       checked={item.isCompleted}
                       onCheckedChange={() => toggleItem(item.id, item.isCompleted)}
-                      disabled={!isInProgress || role !== "LEARNER"}
+                      disabled={!isInProgress || role?.toUpperCase() !== "LEARNER"}
                       className="border-primary/50 data-[state=checked]:bg-primary"
                     />
                     <span
@@ -189,7 +188,7 @@ const AgendaPanel = ({
                       {item.topic}
                     </span>
                   </div>
-                  {role === "TEACHER" && isAgendaPhase && (
+                  {role?.toUpperCase() === "TEACHER" && isAgendaPhase && (
                     <Button
                       variant="ghost"
                       size="icon"
@@ -208,7 +207,7 @@ const AgendaPanel = ({
                    <Plus className="w-6 h-6 opacity-20" />
                 </div>
                 <p className="text-sm">No agenda items set yet.</p>
-                {role === "LEARNER" && (
+                {role?.toUpperCase() === "LEARNER" && (
                   <p className="text-xs mt-1 italic">Waiting for teacher to define the plan...</p>
                 )}
               </div>

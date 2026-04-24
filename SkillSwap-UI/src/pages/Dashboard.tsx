@@ -319,12 +319,28 @@ const Dashboard = () => {
                         </div>
                         <div className="text-right shrink-0">
                           <div className="text-[10px] text-gray-500 mb-2 italic">with {session.partnerName}</div>
-                          <Button
-                            onClick={() => navigate('/swaps')}
-                            className="h-8 md:h-7 text-[9px] md:text-[10px] uppercase tracking-[0.2em] rounded-none bg-black text-white hover:bg-gray-800 px-4"
-                          >
-                            Message
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => {
+                                const params = new URLSearchParams({
+                                  sessionId: String(session.sessionId),
+                                  role: session.role,
+                                  skill: session.skillName,
+                                  partner: session.partnerName,
+                                });
+                                window.open(`/teaching-room?${params}`, "_blank");
+                              }}
+                              className="h-8 md:h-7 text-[9px] md:text-[10px] uppercase tracking-[0.2em] rounded-none bg-green-600 text-white hover:bg-green-700 px-4"
+                            >
+                              Join Room
+                            </Button>
+                            <Button
+                              onClick={() => navigate('/messages')}
+                              className="h-8 md:h-7 text-[9px] md:text-[10px] uppercase tracking-[0.2em] rounded-none bg-black text-white hover:bg-gray-800 px-4"
+                            >
+                              Message
+                            </Button>
+                          </div>
                         </div>
                       </div>
                       <div className="w-full bg-gray-100 h-[1px] mt-2"></div>

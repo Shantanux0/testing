@@ -41,19 +41,22 @@ const Profile = () => {
     loadData();
   }, []);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const profileData = await profileApi.getProfile();
-      if (profileData) {
-        setProfile(profileData);
-      }
-    } catch (error) {
-      toast.error("Failed to load profile");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const profileData = await profileApi.getProfile();
+            if (profileData) {
+                setProfile(profileData);
+            }
+        } catch (error: any) {
+            // If it's a 404, it just means the profile hasn't been created yet
+            if (error?.response?.status !== 404) {
+                toast.error("Failed to load profile");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
   const handleSave = async () => {
     if (!profile) return;

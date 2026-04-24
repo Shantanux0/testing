@@ -59,5 +59,7 @@ public class UserAuthEntity {
     @UpdateTimestamp
     private Timestamp updatedAt;
 
-
+    // Used for single-session management: incremented on login to invalidate old tokens
+    @Builder.Default
+    private Integer tokenVersion = 0;
 }

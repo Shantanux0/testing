@@ -101,10 +101,22 @@ public class AgendaService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the teacher can start the session");
         }
 
-        // Logic check: only allow starting if it was ACCEPTED
-        if (!"ACCEPTED".equalsIgnoreCase(session.getStatus()) && !"IN_PROGRESS".equalsIgnoreCase(session.getStatus())) {
+        // If already IN_PROGRESS, return idempotently (teacher refreshed the page)
+        if ("IN_PROGRESS".equalsIgnoreCase(session.getStatus())) {
+            System.out.println("[AgendaService] Session " + sessionId + " already in progress, returning success.");
+            return com.SkillSwap.PeerToPeerLearning.P7Session.Dto.SessionDto.builder()
+                    .sessionId(session.getId())
+                    .status(session.getStatus())
+                    .skillName(session.getSkillName())
+                    .role("TEACHER")
+                    .build();
+        }
+
+        // Only allow starting if it was ACCEPTED
+        if (!"ACCEPTED".equalsIgnoreCase(session.getStatus())) {
             System.err.println("[AgendaService] Invalid start attempt. Current status: " + session.getStatus());
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session must be in ACCEPTED state to start. Current: " + session.getStatus());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Session cannot be started. Current status: " + session.getStatus());
         }
 
         session.setStatus("IN_PROGRESS");

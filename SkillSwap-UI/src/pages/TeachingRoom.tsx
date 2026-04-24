@@ -173,7 +173,8 @@ const TeachingRoom = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const sessionId = parseInt(searchParams.get("sessionId") || "0");
-    const role = (searchParams.get("role") || "LEARNER") as "TEACHER" | "LEARNER";
+    const roleParam = (searchParams.get("role") || "LEARNER") as "TEACHER" | "LEARNER";
+    const [role, setRole] = useState<"TEACHER" | "LEARNER">(roleParam);
     const skillName = searchParams.get("skill") || "Skill";
     const partnerName = searchParams.get("partner") || "Partner";
 
@@ -182,14 +183,16 @@ const TeachingRoom = () => {
     const [micOn, setMicOn] = useState(true);
     const [videoOn, setVideoOn] = useState(true);
     const [elapsed, setElapsed] = useState(0);
-    const [sessionStatus, setSessionStatus] = useState("ACCEPTED");
+    const [sessionStatus, setSessionStatus] = useState(""); // empty until fetched from server
     const [completionPct, setCompletionPct] = useState(0);
     const [showFeedback, setShowFeedback] = useState(false);
-    const [showAgendaPrompt, setShowAgendaPrompt] = useState(role === "TEACHER");
+    const [showStartPopup, setShowStartPopup] = useState(false);
+    const autoStartTriggered = useRef(false);
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState("");
     const [peerConnected, setPeerConnected] = useState(false);
     const [isSharingScreen, setIsSharingScreen] = useState(false);
+    const [agendaItems, setAgendaItems] = useState<any[]>([]);
 
     // Media refs
     const localVideoRef = useRef<HTMLVideoElement>(null);
@@ -211,25 +214,65 @@ const TeachingRoom = () => {
         return () => clearInterval(timer);
     }, []);
 
-    // ── Fetch Initial Status ──────────────────────────────────────────────────
-    useEffect(() => {
-        const fetchStatus = async () => {
-            try {
-                const response = await api.get("/sessions/my-sessions");
-                const sessions = response.data;
-                const current = sessions.find((s: any) => s.sessionId === sessionId);
-                if (current) {
-                    setSessionStatus(current.status);
-                    if (current.status === "IN_PROGRESS") {
-                        setShowAgendaPrompt(false);
-                    }
+    // Stable ref so polling closure always sees the latest interval ID
+    const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const stopPoll = () => {
+        if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+        }
+    };
+
+    const fetchSessionStatus = async () => {
+        try {
+            const sResponse = await api.get("/sessions/my-sessions");
+            const current = sResponse.data.find((s: any) => s.sessionId === sessionId);
+            if (current) {
+                if (current.role) setRole(current.role.toUpperCase() as any);
+                setSessionStatus(current.status);
+                // Stop polling once in progress
+                if (current.status?.toUpperCase() === "IN_PROGRESS") {
+                    stopPoll();
                 }
+            }
+        } catch (err) {
+            console.error("Failed to fetch session status", err);
+        }
+    };
+
+    // ── Fetch Initial Status & Agenda ──────────────────────────────────────────
+    useEffect(() => {
+        if (sessionId === 0) return;
+        
+        const fetchInitialData = async () => {
+            await fetchSessionStatus();
+            try {
+                const aResponse = await api.get(`/sessions/${sessionId}/agenda`);
+                setAgendaItems(aResponse.data);
             } catch (err) {
-                console.error("Failed to fetch initial status", err);
+                console.error("Failed to fetch agenda", err);
             }
         };
-        fetchStatus();
+        
+        fetchInitialData();
+        // Always start polling for status updates (both teacher and learner benefit)
+        pollIntervalRef.current = setInterval(fetchSessionStatus, 4000);
+        return () => stopPoll();
     }, [sessionId]);
+
+    // ── Auto Start for Teacher ──────────────────────────────────────────────
+    // Only fires after a real status has been fetched (sessionStatus !== "")
+    useEffect(() => {
+        if (
+            role?.toUpperCase() === "TEACHER" &&
+            sessionStatus?.toUpperCase() === "ACCEPTED" &&
+            !autoStartTriggered.current
+        ) {
+            autoStartTriggered.current = true;
+            startClass();
+        }
+    }, [role, sessionStatus]);
 
     // ── Camera Access ──────────────────────────────────────────────────────────
     useEffect(() => {
@@ -260,7 +303,7 @@ const TeachingRoom = () => {
 
     // ── WebRTC + STOMP Engine ──────────────────────────────────────────────────
     useEffect(() => {
-        if (!localStream) return;
+        if (sessionId === 0) return;
 
         const client = new Client({
             brokerURL: `ws://${window.location.hostname}:8080/ws-native`,
@@ -317,7 +360,9 @@ const TeachingRoom = () => {
                 };
 
                 // Normal camera & audio tracks
-                localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+                if (localStream) {
+                    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+                }
 
                 client.subscribe(`/topic/room/${sessionId}/signal`, async (msg) => {
                     const data = JSON.parse(msg.body);
@@ -385,7 +430,7 @@ const TeachingRoom = () => {
 
         client.activate();
         return () => { pcRef.current?.close(); client.deactivate(); };
-    }, [localStream, sessionId, role]);
+    }, [sessionId, role, localStream]); // Added localStream to deps to add tracks when it becomes available
 
     // ── Screen Share Handler ──────────────────────────────────────────────────
     const handleScreenShare = async () => {
@@ -434,6 +479,21 @@ const TeachingRoom = () => {
 
     const submitFeedback = () => { navigate("/dashboard"); };
 
+    const startClass = async () => {
+        try {
+            await api.post(`/sessions/${sessionId}/agenda/start-class`, {});
+            setSessionStatus("IN_PROGRESS");
+            stopPoll(); // Stop polling — no longer needed
+            setShowStartPopup(true);
+            setTimeout(() => setShowStartPopup(false), 3000);
+            toast.success("Class started!");
+        } catch (error: any) {
+            const msg = error?.response?.data?.message || error?.message || "Failed to start class";
+            toast.error(`Could not start: ${msg}`);
+            console.error("[startClass] error:", error?.response?.data);
+        }
+    };
+
     return (
         <div className="h-screen flex flex-col bg-[#0a0a0a] text-white font-sans overflow-hidden">
             {/* Header */}
@@ -463,6 +523,15 @@ const TeachingRoom = () => {
                 </div>
 
                 <div className="flex items-center gap-2 md:gap-4">
+                    {role?.toUpperCase() === "TEACHER" && (sessionStatus?.toUpperCase() === "ACCEPTED" || sessionStatus?.toUpperCase() === "AGENDA_PHASE") && (
+                        <Button 
+                            onClick={startClass}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white uppercase tracking-widest text-[9px] h-8 px-4"
+                        >
+                            Start Class
+                        </Button>
+                    )}
                     <div className="hidden xs:block sm:hidden font-mono text-[10px] text-white/40 mr-1">{fmt(elapsed)}</div>
                     <button onClick={handleEndSession} className="text-[9px] md:text-[10px] uppercase tracking-widest text-gray-500 hover:text-red-500 font-bold transition-colors">
                         End
@@ -592,7 +661,10 @@ const TeachingRoom = () => {
 
             {/* Modals */}
             <AnimatePresence>
-                {role === "LEARNER" && sessionStatus !== "IN_PROGRESS" && (
+                {role?.toUpperCase() === "LEARNER" &&
+                    sessionStatus !== "" &&
+                    sessionStatus?.toUpperCase() !== "IN_PROGRESS" &&
+                    sessionStatus?.toUpperCase() !== "COMPLETED" && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-6 md:p-8 backdrop-blur-md">
                         <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 rounded-full flex items-center justify-center mb-6 md:mb-8 border border-white/20"><Clock className="w-8 h-8 md:w-10 md:h-10 text-white animate-spin-slow" /></div>
                         <h2 className="text-3xl md:text-5xl font-serif italic mb-4 text-center leading-tight">Waiting for the Lesson to Start</h2>
@@ -603,14 +675,15 @@ const TeachingRoom = () => {
             </AnimatePresence>
 
             <AnimatePresence>
-                {showAgendaPrompt && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center p-4 backdrop-blur-lg">
-                        <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white text-black w-full max-w-md p-10 relative">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-black" />
-                            <h2 className="text-3xl font-serif italic mb-4">Set the Agenda</h2>
-                            <p className="text-gray-500 text-sm leading-relaxed mb-8">Define today's lesson topics. Your learner is waiting and will automatically join once you press <strong>Start Class</strong>.</p>
-                            <Button onClick={() => { setShowAgendaPrompt(false); setTab("agenda"); }} className="w-full rounded-none bg-black text-white uppercase tracking-widest text-[10px] h-14 shadow-2xl">Let's Add Topics →</Button>
-                        </motion.div>
+                {showStartPopup && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        exit={{ opacity: 0, y: -20 }} 
+                        className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-green-500 text-white px-8 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-white/20 backdrop-blur-md"
+                    >
+                        <CheckCircle2 className="w-5 h-5" />
+                        <span className="font-bold uppercase tracking-widest text-xs">Class Started · Agenda is Optional</span>
                     </motion.div>
                 )}
             </AnimatePresence>

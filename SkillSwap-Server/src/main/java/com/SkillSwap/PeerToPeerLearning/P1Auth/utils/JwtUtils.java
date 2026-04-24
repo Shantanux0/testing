@@ -1,5 +1,6 @@
 package com.SkillSwap.PeerToPeerLearning.P1Auth.utils;
 
+import com.SkillSwap.PeerToPeerLearning.P1Auth.Service.impl.AppUserDetailService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -18,16 +19,19 @@ public class JwtUtils {
     private String SECRET_KEY;
 
     public String generateToken(UserDetails userDetails) {
-        Map<String, Object> cliams = new HashMap<>();
-        return createToken(cliams, userDetails.getUsername());
+        Map<String, Object> claims = new HashMap<>();
+        if (userDetails instanceof AppUserDetailService.CustomUserDetails) {
+            claims.put("version", ((AppUserDetailService.CustomUserDetails) userDetails).getTokenVersion());
+        }
+        return createToken(claims, userDetails.getUsername());
     }
 
-    private String createToken(Map<String, Object> cliams, String email) {
+    private String createToken(Map<String, Object> claims, String email) {
         return Jwts.builder()
-                .setClaims(cliams)
+                .setClaims(claims)
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) //10  hour expiration
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hour expiration
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
@@ -48,6 +52,10 @@ public class JwtUtils {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public Integer extractTokenVersion(String token) {
+        return extractClaim(token, claims -> claims.get("version", Integer.class));
+    }
+
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
@@ -58,7 +66,18 @@ public class JwtUtils {
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String email = extractEmail(token);
-        return (email.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        if (!email.equals(userDetails.getUsername()) || isTokenExpired(token)) {
+            return false;
+        }
+
+        // Single session validation
+        if (userDetails instanceof AppUserDetailService.CustomUserDetails) {
+            Integer dbVersion = ((AppUserDetailService.CustomUserDetails) userDetails).getTokenVersion();
+            Integer tokenVersion = extractTokenVersion(token);
+            return dbVersion != null && dbVersion.equals(tokenVersion);
+        }
+
+        return true;
     }
 
 
