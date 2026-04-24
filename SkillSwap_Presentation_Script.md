@@ -30,21 +30,22 @@ In today’s world, we have plenty of content, but we lack **verified connection
 ---
 
 ## 4. The Mathematics of Matching (5 Minutes)
-**[Slide: The Math / Priority Matrix]**
-"Now, let's talk about the 'Intelligence' of SkillSwap. We built a **Heuristic Matching Engine** based on a **Normalized Weighted Sum Model**. 
+**[Slide: The Core Scoring Algorithm / Σ Formula]**
+"Now, let's talk about the 'Intelligence' of SkillSwap. We don't just search; we **calculate**. 
 
-### The Example Walkthrough:
-**[Slide: Alice & Bob Match Example]**
-Imagine we have two users:
-- **Alice:** She is an expert in Python (scored 14/15 on our AI test) and wants to learn React.
-- **Bob:** He is an expert in React (scored 12/15) and wants to learn Python.
+We built a **Heuristic Matching Engine** based on a **Multi-Objective Weighted Sum Model**. 
 
-Our AI doesn't just see the skills; it calculates the **Synergy**:
-1. **Mutual Intent (20%):** Both users have exactly what the other needs. **Score: 1.0**
-2. **Expertise (30%):** Both have high verified scores. **Score: 0.86**
-3. **Temporal Synergy (10%):** They have an 80% overlap in their free time. **Score: 0.80**
+### The Formula:
+**[Slide: FinalScore = Σ (n_i * w_i)]**
+"This formula is the brain of our project. It works in four steps:
+1. **Sigma (Σ):** We aggregate multiple data points into a single score.
+2. **n_i (Normalized Input):** We take different units—like test scores and years of experience—and normalize them to a 0-1 scale so they are comparable.
+3. **w_i (Weights):** We apply our Priority Matrix, giving 30% importance to verified expertise and 20% to mutual intent.
+4. **Result:** The sum is a single Compatibility Percentage.
 
-The final result is a **0.92 Match Score**. The system instantly triggers a **'Perfect Swap'** notification and sends an email to both users. This is math-driven learning."
+### The Alice & Bob Match:
+**[Slide: Match Walkthrough]**
+Imagine Alice (Python Expert) and Bob (React Expert). Our AI calculates their synergy across all 8 metrics. Because they have reciprocal needs and proven skills, they achieve a **0.95 Match Score**. The platform immediately triggers a 'Perfect Swap' notification and sends them both an email. This is math-driven, verified learning."
 
 ---
 
@@ -66,6 +67,6 @@ I am now open to any questions. Thank you!"
 ---
 
 ## 💡 Pro-Tips for Q&A:
-- **The 'Math' Question:** "We use Min-Max Normalization to bring all metrics into a unified 0-1 range before applying heuristic weights."
-- **The 'Reciprocity' Question:** "Our algorithm is unique because it prioritizes the 'Double Coincidence of Wants'—ensuring that both parties in a swap get equal value."
+- **The 'Math' Question:** "We use Min-Max Normalization to ensure that all inputs—regardless of their original scale—contribute fairly to the final heuristic score."
+- **The 'Reciprocity' Question:** "Our algorithm is unique because it maximizes **Mutual Synergy**, ensuring that both parties in a swap get equal value."
 - **The 'Own AI' Question:** "The LLM handles the questions, but the **Mathematics of the Match** is our own proprietary Java implementation."
