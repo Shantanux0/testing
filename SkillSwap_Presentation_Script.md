@@ -29,16 +29,21 @@ In today’s world, we have plenty of content, but we lack **verified connection
 
 ---
 
-## 4. Our Own "P2P" Swapping AI (4 Minutes)
-**[Slide: The Swapping AI / Match Logic]**
+## 4. Our Own "P2P" Swapping AI (5 Minutes)
+**[Slide: The Swapping AI / Priority Matrix]**
 "Now, let's talk about our proprietary technology: **The Swapping AI.** 
 
 Unlike LLMs which handle text, we built our own **Heuristic Matching Engine** in Java. We don't use simple keyword searches. We use a **Weighted Sum Model (WSM)** to find **Mutual Compatibility**.
 
-### How the P2P Logic Works:
-1. **Bidirectional Search:** The AI looks for someone who has what you **Learn** AND wants what you **Teach**. It only ranks 'Mutual Matches'.
-2. **The Peer Philosophy:** We eliminated the 'Expert Penalty'. Our AI treats anyone who passed the test as an equal peer, ensuring that learning flows freely across all skill levels.
-3. **The Discovery Queue:** If a match isn't immediate, our AI places you in a 'Persistent Discovery' state, continuously scanning for new partners."
+### The P2P Priority Matrix:
+We analyze 8 distinct data points to ensure a 'Perfect Swap':
+1. **Verified Expertise (30%):** This is our anchor. You must pass the AI test to even enter the pool.
+2. **Proficiency Gap (20%):** We prioritize peers at or above your level, ensuring the learning is impactful.
+3. **Temporal Synergy (10%):** Our algorithm compares availability strings to find overlapping windows where both users are free to learn.
+4. **Mutual Intent (10%):** We prioritize 'Perfect Swaps' where both users have exactly what the other needs.
+5. **Resume Credibility (10%):** Our Resume AI extracts external certifications to give users a credibility boost.
+
+By normalizing these 8 weights into a single score, our AI guarantees that the person you see on your board is your **perfect learning partner**, not just a random user."
 
 ---
 
@@ -64,6 +69,6 @@ I am now open to any questions. Thank you!"
 ---
 
 ## 💡 Pro-Tips for Q&A:
-- **The 'Email' Question:** "We use Spring Boot Starter Mail with a dedicated SMTP relay to ensure deliverability. We send emails both when a match is found and as a 'Still Searching' confirmation to keep users engaged."
-- **The 'Own AI' Question:** "The LLM generates questions, but the **Matching Logic**—the 'Who matches with Whom'—is our own custom Java algorithm using normalized heuristic weights."
-- **The 'Teacher Board' Question:** "It's a dynamic React component that fetches real-time scores from our Spring Boot matching service, ranking peers based on their P2P compatibility."
+- **The 'Math' Question:** "We use a Normalized Weighted Sum Model. Each metric is converted to a 0-1 scale before being multiplied by its heuristic weight."
+- **The 'Temporal' Question:** "We store availability as JSON strings and perform an intersection analysis to find overlapping time slots between the two users."
+- **The 'Own AI' Question:** "The LLM handles the questions, but the **Matching Logic**—the 'Who matches with Whom'—is our own custom Java algorithm."
