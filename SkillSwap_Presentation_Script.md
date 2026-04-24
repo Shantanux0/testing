@@ -28,7 +28,7 @@ We’ve used a modern, high-performance stack:
 "This is where SkillSwap stands apart. You cannot teach a skill on our platform unless you **prove it**.
 
 When a user wants to list a skill, our **AI-powered Test Portal** generates a unique, 15-question exam on the fly. 
-- We use **Google Gemini** as our 'Text Brain' to generate hard-level technical questions, distractors, and an answer key.
+- We use **Groq** as our 'Text Brain' to generate hard-level technical questions using the Mixtral model for high-speed inference.
 - A user must score at least **10 out of 15** to pass.
 - If the AI is ever offline, we have a **Static Question Bank** fallback, ensuring the system is always reliable."
 
@@ -54,8 +54,8 @@ By adding all these weights up, our AI ensures that a 'Perfect Swap' isn't just 
 ## 5. AI Strategy: Tier 1 vs. Tier 2 (2 Minutes)
 **[Slide: AI Implementation / Strategy]**
 "To keep the architecture clean, we use a two-tier AI strategy:
-- **Tier 1 (External AI)**: We use Gemini/OpenAI for things that require human-like language, like generating tests or analyzing session feedback for sentiment.
-- **Tier 2 (Our Internal AI)**: This is our Java-based Matching Engine. It includes a **Learning Loop** that tracks your interactions. If you keep completing sessions with a specific type of teacher, our AI 'learns' your preference and updates your future recommendations."
+- **Tier 1 (External AI - Groq)**: This is our high-speed 'Intelligence Layer'. We use **Groq with the Mixtral 8x7B model** to generate unique exams and analyze feedback with sub-second latency.
+- **Tier 2 (Our Internal AI - Swapping Engine)**: This is our proprietary 'Matchmaker' built in Java. It uses the **Weighted Sum Model** to calculate compatibility. It includes a **Learning Loop** that tracks your interactions. If you keep completing sessions with a specific type of teacher, our AI 'learns' your preference and updates your future recommendations."
 
 ---
 
