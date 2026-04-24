@@ -29,21 +29,21 @@ In today’s world, we have plenty of content, but we lack **verified connection
 
 ---
 
-## 4. Our Own "P2P" Swapping AI (5 Minutes)
-**[Slide: The Swapping AI / Priority Matrix]**
-"Now, let's talk about our proprietary technology: **The Swapping AI.** 
+## 4. The Mathematics of Matching (4 Minutes)
+**[Slide: The Math / Formula Slide]**
+"Now, let's talk about the 'Intelligence' of SkillSwap. We don't just search; we **calculate**. 
 
-Unlike LLMs which handle text, we built our own **Heuristic Matching Engine** in Java. We don't use simple keyword searches. We use a **Weighted Sum Model (WSM)** to find **Mutual Compatibility**.
+We built a **Heuristic Matching Engine** based on a **Normalized Weighted Sum Model**. 
 
-### The P2P Priority Matrix:
-We analyze 8 distinct data points to ensure a 'Perfect Swap':
-1. **Verified Expertise (30%):** This is our anchor. You must pass the AI test to even enter the pool.
-2. **Proficiency Gap (20%):** We prioritize peers at or above your level, ensuring the learning is impactful.
-3. **Temporal Synergy (10%):** Our algorithm compares availability strings to find overlapping windows where both users are free to learn.
-4. **Mutual Intent (10%):** We prioritize 'Perfect Swaps' where both users have exactly what the other needs.
-5. **Resume Credibility (10%):** Our Resume AI extracts external certifications to give users a credibility boost.
+### The Formula:
+$Score = \sum (n_i \cdot w_i)$
 
-By normalizing these 8 weights into a single score, our AI guarantees that the person you see on your board is your **perfect learning partner**, not just a random user."
+### How it works:
+1. **Normalization:** We take raw data—like a 12/15 test score or 3 years of experience—and normalize it to a **0.0 to 1.0 scale**. This allows us to compare 'Apples to Oranges'.
+2. **Weighting:** We apply a **Priority Matrix**. For example, we give **30% weight** to verified expertise and **10%** to temporal synergy (how much your schedules overlap).
+3. **Mutual Synergy:** Our math ensures a 'Perfect Swap' by multiplying the compatibility of both users. If the benefit isn't mutual, the score drops.
+
+This mathematical rigor ensures that when you see a match, it’s not just a guess—it’s a **mathematically guaranteed synergy**."
 
 ---
 
@@ -69,6 +69,6 @@ I am now open to any questions. Thank you!"
 ---
 
 ## 💡 Pro-Tips for Q&A:
-- **The 'Math' Question:** "We use a Normalized Weighted Sum Model. Each metric is converted to a 0-1 scale before being multiplied by its heuristic weight."
-- **The 'Temporal' Question:** "We store availability as JSON strings and perform an intersection analysis to find overlapping time slots between the two users."
-- **The 'Own AI' Question:** "The LLM handles the questions, but the **Matching Logic**—the 'Who matches with Whom'—is our own custom Java algorithm."
+- **The 'Math' Question:** "We use Min-Max Normalization to bring all metrics into a unified 0-1 range before applying heuristic weights."
+- **The 'Why Math?' Question:** "Because standard keyword search doesn't handle 'Reciprocity'. Our math ensures that both users get equal value from the swap."
+- **The 'Own AI' Question:** "The LLM generates questions, but the **Mathematics of the Match** is our own proprietary Java implementation."
