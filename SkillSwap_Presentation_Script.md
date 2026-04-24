@@ -43,7 +43,7 @@ While we use LLMs for text, we engineered the **matching intelligence** ourselve
 ### The Math & Logic (Simple Explanation):
 Our AI takes 8 different pieces of data and calculates a score from 0 to 1. Here is our priority:
 1. **Verified Expertise (30%)**: This comes from our Test Portal. If you don't have the score, the AI won't even consider you.
-2. **Proficiency Gap (20%)**: This is our custom 'Expert Logic'. We prioritize 'Peers' or 'Mentors' (1 level above you). We actually penalize expert matches if they are *too* far ahead, ensuring you don't get overwhelmed.
+2. **Proficiency Gap (20%)**: This is our **'True P2P' Logic**. We prioritize any match where the teacher is at the same level or higher than the learner. This allows beginners and experts to swap skills freely, maximizing the network effect.
 3. **Goal Alignment (10%)**: We match motivations. If you are learning for a 'Job Prep' and the teacher loves 'Detailed Feedback', that’s a 100% match.
 4. **Availability Overlap (10%)**: We analyze your 3-hour time slots to find the maximum intersection of free time.
 
