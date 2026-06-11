@@ -11,6 +11,8 @@ import com.SkillSwap.PeerToPeerLearning.P3ResumePortal.Certification.DTO.Certifi
 import com.SkillSwap.PeerToPeerLearning.P4testPortal.Service.IMPL.TestPortalService;
 import com.SkillSwap.PeerToPeerLearning.P5SkillMatch.Dto.SwapMatchDto;
 import com.SkillSwap.PeerToPeerLearning.P5SkillMatch.Dto.MatchResponseDto;
+import com.SkillSwap.PeerToPeerLearning.P5SkillMatch.Entity.SwapQueueEntity;
+import com.SkillSwap.PeerToPeerLearning.P5SkillMatch.Repository.SwapQueueRepository;
 import com.SkillSwap.PeerToPeerLearning.P6Feedback.Service.ReputationService;
 import com.SkillSwap.PeerToPeerLearning.P1Auth.Service.impl.EmailService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -20,15 +22,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class SkillMatchService {
 
         private final UserProfileRepository userProfileRepository;
         private final UserSkillLevelRepository userSkillLevelRepository;
+        private final SwapQueueRepository swapQueueRepository;
         private final UserAuthRepo userAuthRepo;
         private final TestPortalService testPortalService;
         private final ResumeService resumeService;
@@ -264,6 +270,11 @@ public class SkillMatchService {
                         System.err.println("WARN: Failed to send match notification emails: " + e.getMessage());
                 }
 
+                // If no matches found, add to Swap Queue for background matching
+                if (matches.isEmpty()) {
+                        addToSwapQueue(currentUser.getId(), skillToLearn, skillToTeach);
+                }
+
                 return matches;
         }
 
@@ -359,6 +370,27 @@ public class SkillMatchService {
                 return recommendations;
         }
 
+        private void addToSwapQueue(Long userId, String seek, String offer) {
+                try {
+                        List<SwapQueueEntity> existing = swapQueueRepository.findByUserIdAndStatus(userId, "PENDING");
+                        boolean alreadyQueued = existing.stream()
+                                .anyMatch(q -> q.getSkillToSeek().equalsIgnoreCase(seek) && q.getSkillToOffer().equalsIgnoreCase(offer));
+                        
+                        if (!alreadyQueued) {
+                                SwapQueueEntity queueEntry = SwapQueueEntity.builder()
+                                        .user(userAuthRepo.findById(userId).orElse(null))
+                                        .skillToSeek(seek)
+                                        .skillToOffer(offer)
+                                        .status("PENDING")
+                                        .build();
+                                swapQueueRepository.save(queueEntry);
+                                log.info("Added user {} to Swap Queue for {} <-> {}", userId, seek, offer);
+                        }
+                } catch (Exception e) {
+                        log.error("Failed to add user to swap queue", e);
+                }
+        }
+
         // ===== HELPER METHODS =====
 
         /**
@@ -368,12 +400,6 @@ public class SkillMatchService {
          * 3. REQUIRED: Passed test for this skill (score >= 10/15)
          */
         private boolean canUserTeachSkill(Long userId, UserProfileEntity profile, String skill, String email) {
-                // Check if skill in profile
-                if (profile.getSkills() == null ||
-                                !profile.getSkills().toLowerCase().contains(skill.toLowerCase())) {
-                        return false;
-                }
-
                 // Check if user has declared skill level (Case Insensitive)
                 Optional<UserSkillLevel> skillLevel = userSkillLevelRepository
                                 .findByUserIdAndSkillNameIgnoreCase(userId, skill);
@@ -414,19 +440,12 @@ public class SkillMatchService {
                         return 0.5; // Default if no data
 
                 int teacherValue = getProficiencyValue(teacherLevel.getProficiencyLevel());
-                int learnerValue = learnerLevel != null ? getProficiencyValue(learnerLevel.getProficiencyLevel()) : 1; // Assume
-                                                                                                                       // beginner
+                int learnerValue = learnerLevel != null ? getProficiencyValue(learnerLevel.getProficiencyLevel()) : 1; 
 
                 int gap = teacherValue - learnerValue;
 
-                if (gap == 0)
-                        return 1.0; // Perfect: Peer Learning (Same Level)
-                if (gap == 1)
-                        return 1.0; // Perfect: Mentor (One level above)
-                if (gap == 2)
-                        return 0.9; // Great: Expert
-                if (gap >= 3)
-                        return 0.8; // Good: Master
+                if (gap >= 0)
+                        return 1.0; // Perfect: Any qualified peer or mentor (Same level or above)
                 return 0.4; // Poor: learner more advanced than teacher
         }
 

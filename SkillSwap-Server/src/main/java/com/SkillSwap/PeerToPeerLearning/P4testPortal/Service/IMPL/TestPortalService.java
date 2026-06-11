@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import com.SkillSwap.PeerToPeerLearning.P4testPortal.Service.AIQuestionGeneratorService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ public class TestPortalService {
     private final UserSkillTestRepository testRepository;
     private final ObjectMapper objectMapper;
     private final UserSkillLevelService userSkillLevelService;
+    private final AIQuestionGeneratorService aiQuestionGeneratorService;
 
     private static final int TOTAL_QUESTIONS = 15;
     private static final int PASSING_SCORE = 10; // 67%
@@ -61,20 +63,34 @@ public class TestPortalService {
             }
         }
 
-        // ---- Manual: no AI, pull from StaticQuestionBank ----
-        List<TestQuestion> questions;
+        // ---- Attempt AI Generation First ----
+        List<TestQuestion> questions = new ArrayList<>();
+        String provider = "MANUAL";
+
         try {
-            questions = StaticQuestionBank.getQuestionsOrThrow(request.getSkillName());
-        } catch (IllegalArgumentException ex) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+            questions = aiQuestionGeneratorService.generateQuestions(request.getSkillName(), TOTAL_QUESTIONS);
+            if (questions != null && questions.size() == TOTAL_QUESTIONS) {
+                provider = aiQuestionGeneratorService.getProviderName();
+                log.info("Successfully generated AI questions for {} using {}", request.getSkillName(), provider);
+            } else {
+                log.warn("AI returned invalid question count, falling back to static bank");
+                questions = StaticQuestionBank.getQuestionsOrThrow(request.getSkillName());
+            }
+        } catch (Exception e) {
+            log.warn("AI generation failed, falling back to static bank: {}", e.getMessage());
+            try {
+                questions = StaticQuestionBank.getQuestionsOrThrow(request.getSkillName());
+            } catch (IllegalArgumentException ex) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+            }
         }
 
         if (questions.size() != TOTAL_QUESTIONS) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Static bank misconfigured: expected " + TOTAL_QUESTIONS + " questions");
+                    "Question bank misconfigured: expected " + TOTAL_QUESTIONS + " questions");
         }
 
-        UserSkillTestEntity testEntity = createTestEntity(user, request.getSkillName(), questions, "MANUAL");
+        UserSkillTestEntity testEntity = createTestEntity(user, request.getSkillName(), questions, provider);
         testEntity = testRepository.save(testEntity);
 
         return mapToTestResponse(testEntity);

@@ -184,25 +184,44 @@
             color: var(--text-muted);
         }
 
-        /* Code/Math Blocks */
-        .math-block {
-            background: #f1f5f9;
-            padding: 2rem;
-            border-radius: 12px;
-            font-family: 'JetBrains Mono', monospace;
-            border-left: 6px solid var(--secondary);
+        /* Math Styling */
+        .formula-section {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 3rem;
+            border-radius: 20px;
             margin: 2rem 0;
+            text-align: center;
         }
 
-        .code-snippet {
-            background: #1e293b;
-            color: #e2e8f0;
+        .formula-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem;
+            color: #38bdf8;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.1em;
+        }
+
+        .variable-list {
+            text-align: left;
+            display: inline-block;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .variable-list code {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .math-detail {
+            background: #f8fafc;
             padding: 1.5rem;
             border-radius: 12px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            overflow-x: auto;
-            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            margin-top: 1rem;
         }
 
         table {
@@ -223,6 +242,33 @@
             border-bottom: 1px solid var(--border);
         }
 
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .example-box {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-top: 2rem;
+        }
+
+        .example-title {
+            color: #1d4ed8;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
         footer {
             margin-top: 8rem;
             padding-top: 2rem;
@@ -238,92 +284,113 @@
         <h1>SkillSwap Tech</h1>
         <ul>
             <li><a href="#summary" class="active">0. Executive Summary</a></li>
-            <li><a href="#architecture">1. System Architecture</a></li>
-            <li><a href="#stack">2. Technology Stack</a></li>
-            <li><a href="#p4-test">3. AI Test Portal</a></li>
-            <li><a href="#p5-match">4. The "Swapping AI" Math</a></li>
-            <li><a href="#p8-ai">5. Two-Tier AI Strategy</a></li>
-            <li><a href="#database">6. Data Architecture</a></li>
-            <li><a href="#qa">7. Expert Q&A</a></li>
+            <li><a href="#p5-formula">1. The Core Formula</a></li>
+            <li><a href="#p5-math">2. Logic Breakdown</a></li>
+            <li><a href="#p5-matrix">3. Priority Matrix</a></li>
+            <li><a href="#p5-example">4. Real-World Walkthrough</a></li>
+            <li><a href="#p4-test">5. AI Verification</a></li>
+            <li><a href="#qa">6. Expert Q&A</a></li>
         </ul>
     </nav>
 
     <main>
         <header class="report-header">
-            <h1>SkillSwap:<br>The AI & Algorithm Deep Dive</h1>
+            <h1>SkillSwap:<br>The Mathematics of Matching</h1>
             <div class="metadata">
-                <div>Proprietary Engine: <strong>The Swapping AI</strong></div>
-                <div>Logic Type: <strong>Heuristic Expert System</strong></div>
-                <div>Math Model: <strong>Weighted Sum Model (WSM)</strong></div>
+                <div>Model: <strong>Multi-Objective Weighted Sum</strong></div>
+                <div>Objective: <strong>Heuristic Optimization</strong></div>
+                <div>Calculated In: <strong>Java Engine</strong></div>
             </div>
         </header>
 
-        <section id="summary">
-            <h2><span>0</span> Executive Summary</h2>
-            <p>SkillSwap is a premium peer-to-peer learning ecosystem. While many platforms use basic search, SkillSwap uses a <strong>Proprietary Swapping AI</strong> to mathematically guarantee high-quality matches. This report focuses on the math, logic, and priorities of our internal AI engine.</p>
-        </section>
-
-        <section id="p4-test">
-            <h2><span>3</span> AI Dynamic Test Portal</h2>
-            <p>We use external LLMs (Tier 1 AI) to generate unique exams. This ensures that every teacher is verified before the Swapping AI even considers them.</p>
-            <ul>
-                <li><strong>Dynamic Generation:</strong> Questions are created on-the-fly based on skill and difficulty.</li>
-                <li><strong>Fallback Logic:</strong> A local static bank ensures 100% uptime if external AI services fail.</li>
-            </ul>
-        </section>
-
-        <section id="p5-match">
-            <h2><span>4</span> The "Swapping AI": Mathematical Deep Dive</h2>
-            <p>This is the "Heart" of the platform. It is a <strong>Heuristic Expert System</strong> built in Java. It doesn't just match keywords; it matches human compatibility.</p>
+        <section id="p5-formula">
+            <h2><span>1</span> The Core Scoring Algorithm</h2>
+            <p>Our internal AI uses a <strong>Multi-Objective Decision Making (MODM)</strong> approach. The final compatibility between any two peers is defined by the following summation:</p>
             
-            <h3>1. The Weighted Sum Model (The Math)</h3>
-            <p>Our AI takes raw data and normalizes it to a 0-1 scale. Then, it applies the following priority matrix:</p>
-            <div class="math-block">
-                Final_Score = (Test × 0.30) + (LevelGap × 0.20) + (Goals × 0.10) + (Time × 0.10) + (Certs × 0.10) + (Reputation × 0.10) + (Style × 0.05) + (Commitment × 0.05)
+            <div class="formula-section">
+                <div class="formula-display">FinalScore = Σ (n<sub>i</sub> * w<sub>i</sub>)</div>
+                <div class="variable-list">
+                    <p><code>Σ</code> &nbsp; = The Summation of all matching factors</p>
+                    <p><code>n<sub>i</sub></code> = The <strong>Normalized Input</strong> of factor <i>i</i> (0.0 to 1.0)</p>
+                    <p><code>w<sub>i</sub></code> = The <strong>Heuristic Weight</strong> assigned to factor <i>i</i></p>
+                </div>
             </div>
 
-            <h3>2. Heuristic Logic Breakdown (The Logic)</h3>
+            <h3>How it works:</h3>
             <div class="feature-grid">
                 <div class="card">
-                    <h4>Proficiency Gap Logic</h4>
-                    <p>Our AI uses a 'Peer-to-Mentor' bias. If a teacher is 1 level above you, the score is <strong>1.0</strong>. If they are 4 levels above, the score drops to <strong>0.8</strong> because experts can be too advanced for beginners. If they are below you, the score drops to <strong>0.4</strong>.</p>
+                    <h4>1. Metric Collection</h4>
+                    <p>We extract diverse data points: Test Scores from Groq AI, Experience from Resumes, and Goals from User Profiles.</p>
                 </div>
                 <div class="card">
-                    <h4>Goal Compatibility Logic</h4>
-                    <p>The AI matches 'Motivations'. A learner who wants 'Job Prep' is a perfect match (1.0) for a teacher who 'Loves Teaching', but a poor match (0.6) for someone just looking to 'Network'.</p>
+                    <h4>2. Unit Normalization</h4>
+                    <p>Since 'Years of Experience' and 'Test Score' use different units, we normalize them to a standard 0-1 scale using <strong>Min-Max Scaling</strong>.</p>
+                </div>
+                <div class="card">
+                    <h4>3. Heuristic Priority</h4>
+                    <p>Each factor is multiplied by its Weight (w<sub>i</sub>). High-priority factors like <strong>Verified Expertise</strong> carry more influence than secondary factors.</p>
+                </div>
+                <div class="card">
+                    <h4>4. Final Summation</h4>
+                    <p>The weighted signals are summed. A score > 0.8 is flagged as a <strong>'Perfect Swap'</strong>, triggering immediate email notifications.</p>
                 </div>
             </div>
         </section>
 
-        <section id="p8-ai">
-            <h2><span>5</span> Two-Tier AI Strategy</h2>
-            <p>To be technically accurate, our platform uses two distinct types of AI:</p>
-            <div class="feature-grid">
-                <div class="card">
-                    <h4>Tier 1: External LLM (The Brain)</h4>
-                    <p>Uses Gemini/OpenAI for text tasks. It handles Question Generation, distractor creation, and Sentiment Analysis of feedback.</p>
-                </div>
-                <div class="card">
-                    <h4>Tier 2: Internal Swapping AI (The Matchmaker)</h4>
-                    <p>This is our proprietary logic. It uses the <strong>WSM algorithm</strong> and a <strong>Learning Loop</strong> that learns your preferences based on which teachers you interact with most.</p>
-                </div>
-            </div>
+        <section id="p5-matrix">
+            <h2><span>3</span> The P2P Priority Matrix</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric (n_i)</th>
+                        <th>Weight (w_i)</th>
+                        <th>Logic Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Verified Expertise</strong></td>
+                        <td><span class="badge">30%</span></td>
+                        <td>Normalized test score. Score < 10/15 results in 0.0 validation.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mutual Intent</strong></td>
+                        <td><span class="badge">20%</span></td>
+                        <td>Reciprocal matching of Seek/Offer skills.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Proficiency Gap</strong></td>
+                        <td><span class="badge">20%</span></td>
+                        <td>Ensures the teacher is at a peer or mentor level.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Temporal Synergy</strong></td>
+                        <td><span class="badge">10%</span></td>
+                        <td>Availability overlap in JSON schedule.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Goal Alignment</strong></td>
+                        <td><span class="badge">20%</span></td>
+                        <td>Similarity in motivations and learning timeline.</td>
+                    </tr>
+                </tbody>
+            </table>
         </section>
 
-        <section id="qa">
-            <h2><span>7</span> Expert Q&A</h2>
-            <div class="card" style="margin-bottom: 1rem;">
-                <h4>Q: Is this a Neural Network?</h4>
-                <p>A: No, this is a <strong>Heuristic Expert System</strong>. While neural networks are black boxes, our system is transparent and controllable, ensuring every match can be explained to the user.</p>
-            </div>
-            <div class="card">
-                <h4>Q: How does the AI learn?</h4>
-                <p>A: Our internal Swapping AI uses a <strong>Feedback Loop</strong>. Every time a session is completed, the AI updates the user's reputation and goal-affinity scores, refining future matches automatically.</p>
+        <section id="p5-example">
+            <h2><span>4</span> Real-World Walkthrough</h2>
+            <div class="example-box">
+                <div class="example-title">🚀 Scenario: Alice & Bob Swap</div>
+                <p>If Alice (Expert Python) matches Bob (Expert React):</p>
+                <div class="math-detail">
+                    <p>Expertise Score (0.9 * 0.3) + Intent (1.0 * 0.2) + Gap (1.0 * 0.2) + Synergy (0.8 * 0.1) + Goals (1.0 * 0.2)</p>
+                    <p style="font-size: 1.5rem; margin-top: 1rem;"><strong>= 0.95 (Perfect Swap!)</strong></p>
+                </div>
             </div>
         </section>
 
         <footer>
-            <p>SkillSwap Technical Deep Dive - April 2026</p>
+            <p>SkillSwap Mathematical Framework - April 2026</p>
         </footer>
     </main>
 </body>
