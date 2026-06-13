@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, ArrowRight, Loader2, ArrowLeft } from "lucide-react";
-import { authApi } from "@/lib/api";
+import { authApi, getErrorMessage } from "@/lib/api";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -71,7 +71,7 @@ const OTP = () => {
             setTimeout(() => navigate("/signin"), 1500);
         } catch (err: any) {
             console.error("OTP Error:", err);
-            const msg = err?.message?.includes("API") ? err.message.split(": ")[1] : err.message;
+            const msg = getErrorMessage(err);
             toast.error("Verification Failed", { description: msg || "Invalid code." });
             setLoading(false);
         }

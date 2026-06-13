@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-import { matchApi, SwapMatchDto, sessionApi } from "@/lib/api";
+import { matchApi, SwapMatchDto, sessionApi, getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -43,9 +43,7 @@ const CreateSwap = () => {
             setShowAnimation(true);
         } catch (error: any) {
             setLoading(false);
-            const responseMsg = error.response?.data?.message || error.response?.data || error.message || "Unknown error";
-            // Ensure responseMsg is a string
-            const msg = typeof responseMsg === "string" ? responseMsg : JSON.stringify(responseMsg);
+            const msg = getErrorMessage(error);
 
             if (msg.includes("PASS A TEST") || msg.includes("must have")) {
                 toast.error("Skill Validation Failed", {
@@ -87,8 +85,8 @@ const CreateSwap = () => {
             setStatusModal('success');
         } catch (error: any) {
             setLoading(false);
-            const msg = error.message;
-            if (msg.includes("409") || msg.includes("already pending")) {
+            const msg = getErrorMessage(error);
+            if (msg.includes("409") || msg.includes("already pending") || msg.includes("already requested")) {
                 // Treat "already pending" as success for this flow
                 setStatusModal('success');
             } else {

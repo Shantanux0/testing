@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { profileApi, UserProfile } from "@/lib/api";
+import { profileApi, UserProfile, getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -99,7 +99,7 @@ const Profile = () => {
       setIsEditing(false);
       toast.success("Profile updated successfully");
     } catch (error: any) {
-      toast.error(error.message || "Failed to save profile");
+      toast.error(getErrorMessage(error));
     } finally {
       setSaving(false);
     }

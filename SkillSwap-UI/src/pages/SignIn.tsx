@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Sparkles, Eye, EyeOff } from "lucide-react";
+import { getErrorMessage } from "@/lib/api";
 
 const SignIn = () => {
   const { signIn } = useAuth();
@@ -25,10 +26,7 @@ const SignIn = () => {
       navigate("/", { replace: true });
     } catch (err: any) {
       console.error(err);
-      const errorMessage = err?.message?.includes("API")
-        ? err.message.split(": ")[1] || "Unable to sign in. Please try again."
-        : "Unable to sign in. Please try again.";
-      setError(errorMessage);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

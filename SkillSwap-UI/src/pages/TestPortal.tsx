@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { testApi, TestResponse, TestHistory, TestResultResponse, UserAnswer } from "@/lib/api";
+import { testApi, TestResponse, TestHistory, TestResultResponse, UserAnswer, getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -106,7 +106,7 @@ const TestPortal = () => {
       setCurrentQuestionIndex(0);
       setMode("test");
     } catch (e: any) {
-      toast.error(e.message || "Failed to start test");
+      toast.error(getErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -131,7 +131,7 @@ const TestPortal = () => {
       setMode("result");
       loadHistory();
     } catch (e: any) {
-      toast.error(e.message || "Failed to submit");
+      toast.error(getErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -182,7 +182,7 @@ const TestPortal = () => {
       setMode("result");
     } catch (e: any) {
       console.error(e);
-      toast.error(e.response?.data?.message || e.message || "Failed to load details");
+      toast.error(getErrorMessage(e));
     } finally {
       setLoading(false);
     }

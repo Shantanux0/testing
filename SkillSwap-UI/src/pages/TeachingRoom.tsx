@@ -1,33 +1,30 @@
 import { useState, useEffect, useRef } from "react";
-import MainLayout from "@/components/layout/MainLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    CheckCircle2, Circle, Clock, Star, ChevronDown, ChevronUp, ChevronLeft, ChevronRight,
-    BookOpen, GraduationCap, Send, ArrowLeft, Mic, MicOff, Video, VideoOff,
-    Monitor, PhoneOff, Eraser, Pencil, Type, Minus, Square, LogOut
+    ArrowLeft, Mic, MicOff, Video, VideoOff,
+    Monitor, PhoneOff, Eraser, Pencil, Minus, Square, UserX, AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import AgendaPanel from "@/components/meeting/AgendaPanel";
 import api from "@/lib/api";
 import { Client } from "@stomp/stompjs";
 
-// ─── Control Button ─────────────────────────────────────────────────────────────
 const ControlBtn = ({ children, onClick, active, danger, className }: any) => (
-    <button onClick={onClick} className={`h-12 w-12 rounded-xl flex items-center justify-center transition-all ${active ? "bg-white text-black shadow-xl" : "bg-white/5 text-gray-400 hover:text-white border border-white/5"} ${danger && !active ? "border-red-500/50 text-red-500 bg-red-500/5" : ""} ${className}`}>
+    <button
+        onClick={onClick}
+        className={`h-12 w-12 rounded-xl flex items-center justify-center transition-all
+      ${active ? "bg-white text-black shadow-xl" : "bg-white/5 text-gray-400 hover:text-white border border-white/5"}
+      ${danger && !active ? "border-red-500/50 text-red-500 bg-red-500/5" : ""}
+      ${className}`}
+    >
         {children}
     </button>
 );
 
-// ─── Whiteboard Component ────────────────────────────────────────────────────────
-interface WhiteboardProps {
-    stompClient: Client | null;
-    sessionId: number;
-    role: string;
-}
+interface WhiteboardProps { stompClient: Client | null; sessionId: number; role: string; }
 
 const Whiteboard = ({ stompClient, sessionId, role }: WhiteboardProps) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -42,68 +39,45 @@ const Whiteboard = ({ stompClient, sessionId, role }: WhiteboardProps) => {
         const rect = canvasRef.current!.getBoundingClientRect();
         const scaleX = canvasRef.current!.width / rect.width;
         const scaleY = canvasRef.current!.height / rect.height;
-        
-        let clientX, clientY;
-        if ("touches" in e) {
-            clientX = e.touches[0].clientX;
-            clientY = e.touches[0].clientY;
-        } else {
-            clientX = (e as React.MouseEvent).clientX;
-            clientY = (e as React.MouseEvent).clientY;
-        }
-        
-        return {
-            x: (clientX - rect.left) * scaleX,
-            y: (clientY - rect.top) * scaleY,
-        };
+        let clientX: number, clientY: number;
+        if ("touches" in e) { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+        else { clientX = (e as React.MouseEvent).clientX; clientY = (e as React.MouseEvent).clientY; }
+        return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
     };
 
     const sendDraw = (payload: object) => {
         if (stompClient?.connected) {
-            stompClient.publish({
-                destination: `/app/room/${sessionId}/whiteboard`,
-                body: JSON.stringify({ ...payload, sender: role }),
-            });
+            stompClient.publish({ destination: `/app/room/${sessionId}/whiteboard`, body: JSON.stringify({ ...payload, sender: role }) });
         }
     };
 
-    const onMouseDown = (e: React.MouseEvent) => {
+    const onMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
         const ctx = getCtx(); if (!ctx) return;
-        const pos = getPos(e);
-        setStartPos(pos);
-        setIsDrawing(true);
+        const pos = getPos(e); setStartPos(pos); setIsDrawing(true);
         snapshotRef.current = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-        if (tool === "pen" || tool === "eraser") {
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-        }
+        if (tool === "pen" || tool === "eraser") { ctx.beginPath(); ctx.moveTo(pos.x, pos.y); }
     };
 
-    const onMouseMove = (e: React.MouseEvent) => {
+    const onMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
         if (!isDrawing) return;
         const ctx = getCtx(); if (!ctx) return;
         const pos = getPos(e);
         ctx.lineWidth = tool === "eraser" ? 20 : 3;
         ctx.strokeStyle = tool === "eraser" ? "#ffffff" : color;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-
+        ctx.lineCap = "round"; ctx.lineJoin = "round";
         if (tool === "pen" || tool === "eraser") {
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
+            ctx.lineTo(pos.x, pos.y); ctx.stroke();
             sendDraw({ type: "line", x0: startPos.x, y0: startPos.y, x1: pos.x, y1: pos.y, color: ctx.strokeStyle, lineWidth: ctx.lineWidth });
             setStartPos(pos);
         } else if (snapshotRef.current) {
-            ctx.putImageData(snapshotRef.current, 0, 0);
-            ctx.beginPath();
+            ctx.putImageData(snapshotRef.current, 0, 0); ctx.beginPath();
             if (tool === "line") { ctx.moveTo(startPos.x, startPos.y); ctx.lineTo(pos.x, pos.y); ctx.stroke(); }
             else if (tool === "rect") ctx.strokeRect(startPos.x, startPos.y, pos.x - startPos.x, pos.y - startPos.y);
         }
     };
 
-    const onMouseUp = (e: React.MouseEvent) => {
-        if (!isDrawing) return;
-        setIsDrawing(false);
+    const onMouseUp = (e: React.MouseEvent | React.TouchEvent) => {
+        if (!isDrawing) return; setIsDrawing(false);
         const ctx = getCtx(); if (!ctx) return;
         const pos = getPos(e);
         if (tool === "line" || tool === "rect") {
@@ -111,28 +85,18 @@ const Whiteboard = ({ stompClient, sessionId, role }: WhiteboardProps) => {
         }
     };
 
-    // Subscribe to incoming drawing events
     useEffect(() => {
         if (!stompClient) return;
-        const subscription = stompClient.subscribe(`/topic/room/${sessionId}/whiteboard`, (msg) => {
+        const sub = stompClient.subscribe(`/topic/room/${sessionId}/whiteboard`, (msg) => {
             const data = JSON.parse(msg.body);
-            if (data.sender === role) return; 
-            const ctx = canvasRef.current?.getContext("2d");
-            if (!ctx) return;
-            ctx.beginPath();
-            ctx.strokeStyle = data.color;
-            ctx.lineWidth = data.lineWidth;
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
-            if (data.type === "line") {
-                ctx.moveTo(data.x0, data.y0);
-                ctx.lineTo(data.x1, data.y1);
-                ctx.stroke();
-            } else if (data.type === "rect") {
-                ctx.strokeRect(data.x0, data.y0, data.x1 - data.x0, data.y1 - data.y0);
-            }
+            if (data.sender === role) return;
+            const ctx = canvasRef.current?.getContext("2d"); if (!ctx) return;
+            ctx.beginPath(); ctx.strokeStyle = data.color; ctx.lineWidth = data.lineWidth;
+            ctx.lineCap = "round"; ctx.lineJoin = "round";
+            if (data.type === "line") { ctx.moveTo(data.x0, data.y0); ctx.lineTo(data.x1, data.y1); ctx.stroke(); }
+            else if (data.type === "rect") ctx.strokeRect(data.x0, data.y0, data.x1 - data.x0, data.y1 - data.y0);
         });
-        return () => subscription.unsubscribe();
+        return () => sub.unsubscribe();
     }, [stompClient, sessionId, role]);
 
     return (
@@ -151,288 +115,262 @@ const Whiteboard = ({ stompClient, sessionId, role }: WhiteboardProps) => {
                 <input type="color" value={color} onChange={e => setColor(e.target.value)} className="w-8 h-8 md:w-9 md:h-9 rounded-lg cursor-pointer border-0 p-1 bg-white shadow-inner" title="Pick color" />
             </div>
             <canvas
-                ref={canvasRef}
-                width={1600}
-                height={1000}
-                onMouseDown={onMouseDown}
-                onMouseMove={onMouseMove}
-                onMouseUp={onMouseUp}
-                onTouchStart={onMouseDown}
-                onTouchMove={onMouseMove}
-                onTouchEnd={onMouseUp}
-                onMouseLeave={() => { if(isDrawing) setIsDrawing(false); }}
+                ref={canvasRef} width={1600} height={1000}
+                onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp}
+                onTouchStart={onMouseDown} onTouchMove={onMouseMove} onTouchEnd={onMouseUp}
+                onMouseLeave={() => { if (isDrawing) setIsDrawing(false); }}
                 className="w-full h-full cursor-crosshair bg-[#fefefe] touch-none"
             />
         </div>
     );
 };
 
-// ─── Main TeachingRoom Component ─────────────────────────────────────────────────
 const TeachingRoom = () => {
-    const { user } = useAuth();
+    useAuth(); // Just to ensure protected route context is accessed
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const sessionId = parseInt(searchParams.get("sessionId") || "0");
     const roleParam = (searchParams.get("role") || "LEARNER") as "TEACHER" | "LEARNER";
-    const [role, setRole] = useState<"TEACHER" | "LEARNER">(roleParam);
     const skillName = searchParams.get("skill") || "Skill";
     const partnerName = searchParams.get("partner") || "Partner";
 
-    // UI State
+    const [role] = useState<"TEACHER" | "LEARNER">(roleParam);
     const [tab, setTab] = useState<"whiteboard" | "agenda" | "screen">("whiteboard");
     const [micOn, setMicOn] = useState(true);
     const [videoOn, setVideoOn] = useState(true);
     const [elapsed, setElapsed] = useState(0);
-    const [sessionStatus, setSessionStatus] = useState(""); // empty until fetched from server
     const [completionPct, setCompletionPct] = useState(0);
     const [showFeedback, setShowFeedback] = useState(false);
-    const [showStartPopup, setShowStartPopup] = useState(false);
-    const autoStartTriggered = useRef(false);
-    const [rating, setRating] = useState(0);
-    const [comment, setComment] = useState("");
     const [peerConnected, setPeerConnected] = useState(false);
     const [isSharingScreen, setIsSharingScreen] = useState(false);
-    const [agendaItems, setAgendaItems] = useState<any[]>([]);
+    const [peerLeft, setPeerLeft] = useState(false);
+    const [cameraPermissionError, setCameraPermissionError] = useState(false);
+    const [permissionErrorType, setPermissionErrorType] = useState("");
+    const [hasJoined, setHasJoined] = useState(false);
 
-    // Media refs
+    const [localScreenStream, setLocalScreenStream] = useState<MediaStream | null>(null);
+    const [remoteScreenStream, setRemoteScreenStream] = useState<MediaStream | null>(null);
+    const [stompClient, setStompClient] = useState<Client | null>(null);
+
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
-    const remoteScreenVideoRef = useRef<HTMLVideoElement>(null);
-    
-    const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-    const [localScreenStream, setLocalScreenStream] = useState<MediaStream | null>(null);
-
-    // WebRTC + STOMP refs
-    const [stompClient, setStompClient] = useState<Client | null>(null);
+    const localCameraStreamRef = useRef<MediaStream | null>(null);
     const pcRef = useRef<RTCPeerConnection | null>(null);
     const iceQueue = useRef<RTCIceCandidateInit[]>([]);
     const screenSenderRef = useRef<RTCRtpSender | null>(null);
+    const stompClientRef = useRef<Client | null>(null);
+    const roleRef = useRef<"TEACHER" | "LEARNER">(roleParam);
+    const peerWasConnectedRef = useRef(false);
 
-    // ── Timer ──────────────────────────────────────────────────────────────────
+    // Timer
     useEffect(() => {
-        const timer = setInterval(() => setElapsed(s => s + 1), 1000);
-        return () => clearInterval(timer);
+        const t = setInterval(() => setElapsed(s => s + 1), 1000);
+        return () => clearInterval(t);
     }, []);
 
-    // Stable ref so polling closure always sees the latest interval ID
-    const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-    const stopPoll = () => {
-        if (pollIntervalRef.current) {
-            clearInterval(pollIntervalRef.current);
-            pollIntervalRef.current = null;
-        }
-    };
-
-    const fetchSessionStatus = async () => {
-        try {
-            const sResponse = await api.get("/sessions/my-sessions");
-            const current = sResponse.data.find((s: any) => s.sessionId === sessionId);
-            if (current) {
-                if (current.role) setRole(current.role.toUpperCase() as any);
-                setSessionStatus(current.status);
-                // Stop polling once in progress
-                if (current.status?.toUpperCase() === "IN_PROGRESS") {
-                    stopPoll();
-                }
-            }
-        } catch (err) {
-            console.error("Failed to fetch session status", err);
-        }
-    };
-
-    // ── Fetch Initial Status & Agenda ──────────────────────────────────────────
+    // Toggles
     useEffect(() => {
-        if (sessionId === 0) return;
-        
-        const fetchInitialData = async () => {
-            await fetchSessionStatus();
-            try {
-                const aResponse = await api.get(`/sessions/${sessionId}/agenda`);
-                setAgendaItems(aResponse.data);
-            } catch (err) {
-                console.error("Failed to fetch agenda", err);
-            }
-        };
-        
-        fetchInitialData();
-        // Always start polling for status updates (both teacher and learner benefit)
-        pollIntervalRef.current = setInterval(fetchSessionStatus, 4000);
-        return () => stopPoll();
+        localCameraStreamRef.current?.getAudioTracks().forEach(t => { t.enabled = micOn; });
+    }, [micOn]);
+
+    useEffect(() => {
+        localCameraStreamRef.current?.getVideoTracks().forEach(t => { t.enabled = videoOn; });
+    }, [videoOn]);
+
+    // Update status to IN_PROGRESS so backend knows
+    useEffect(() => {
+        if (sessionId !== 0) {
+            api.put(`/sessions/${sessionId}/status?status=IN_PROGRESS`).catch(() => {});
+        }
     }, [sessionId]);
 
-    // ── Auto Start for Teacher ──────────────────────────────────────────────
-    // Only fires after a real status has been fetched (sessionStatus !== "")
-    useEffect(() => {
-        if (
-            role?.toUpperCase() === "TEACHER" &&
-            sessionStatus?.toUpperCase() === "ACCEPTED" &&
-            !autoStartTriggered.current
-        ) {
-            autoStartTriggered.current = true;
-            startClass();
-        }
-    }, [role, sessionStatus]);
+    const startSetup = async () => {
+        if (sessionId === 0) return;
+        setCameraPermissionError(false);
 
-    // ── Camera Access ──────────────────────────────────────────────────────────
-    useEffect(() => {
-        let activeStream: MediaStream | null = null;
-        const startCamera = async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                activeStream = stream;
-                setLocalStream(stream);
-                if (localVideoRef.current) localVideoRef.current.srcObject = stream;
-            } catch (err) {
-                console.error("Camera access denied", err);
-                toast.error("Could not access camera/microphone.");
+        let cameraStream: MediaStream | null = null;
+        let pc: RTCPeerConnection | null = null;
+        let client: Client | null = null;
+        let announceTimer: ReturnType<typeof setInterval> | null = null;
+
+        try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error("unsupported");
+            }
+            cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            localCameraStreamRef.current = cameraStream;
+            if (localVideoRef.current) localVideoRef.current.srcObject = cameraStream;
+        } catch (err: any) {
+            console.error("[Camera]", err);
+            setCameraPermissionError(true);
+            if (err.message === "unsupported") {
+                setPermissionErrorType("unsupported");
+            } else if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+                setPermissionErrorType("denied");
+            } else {
+                setPermissionErrorType("other");
+            }
+            toast.error("Could not access camera and microphone.");
+            return; // Stop setup if no permissions
+        }
+
+        pc = new RTCPeerConnection({
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" },
+                { urls: "stun:stun1.l.google.com:19302" },
+            ],
+        });
+        pcRef.current = pc;
+
+        cameraStream.getTracks().forEach(track => pc!.addTrack(track, cameraStream!));
+
+        pc.onconnectionstatechange = () => {
+            if (pc!.connectionState === "connected") {
+                setPeerConnected(true); peerWasConnectedRef.current = true; setPeerLeft(false);
+            }
+            if ((pc!.connectionState === "disconnected" || pc!.connectionState === "failed") && peerWasConnectedRef.current) {
+                setPeerConnected(false); setPeerLeft(true);
             }
         };
-        startCamera();
-        return () => { activeStream?.getTracks().forEach(t => t.stop()); };
-    }, []);
 
-    // ── Mic/Video toggle ───────────────────────────────────────────────────────
-    useEffect(() => {
-        localStream?.getAudioTracks().forEach(t => { t.enabled = micOn; });
-    }, [micOn, localStream]);
+        pc.onicecandidate = (ev) => {
+            if (ev.candidate && stompClientRef.current?.connected) {
+                stompClientRef.current.publish({
+                    destination: `/app/room/${sessionId}/signal`,
+                    body: JSON.stringify({ type: "candidate", candidate: ev.candidate, sender: roleRef.current }),
+                });
+            }
+        };
 
-    useEffect(() => {
-        localStream?.getVideoTracks().forEach(t => { t.enabled = videoOn; });
-    }, [videoOn, localStream]);
+        // Track seen stream IDs so we perfectly distinguish Camera vs Screen
+        const seenStreamIds = new Set<string>();
 
-    // ── WebRTC + STOMP Engine ──────────────────────────────────────────────────
-    useEffect(() => {
-        if (sessionId === 0) return;
+        pc.ontrack = (ev) => {
+            const stream = ev.streams[0];
+            if (!stream) return;
+            
+            if (ev.track.kind === "audio") {
+                if (remoteVideoRef.current && remoteVideoRef.current.srcObject) {
+                    (remoteVideoRef.current.srcObject as MediaStream).addTrack(ev.track);
+                } else if (remoteVideoRef.current) {
+                    remoteVideoRef.current.srcObject = stream;
+                }
+                return;
+            }
 
-        const client = new Client({
-            brokerURL: `ws://${window.location.hostname}:8080/ws-native`,
+            if (ev.track.kind === "video") {
+                if (!seenStreamIds.has(stream.id)) {
+                    if (seenStreamIds.size === 0) {
+                        // First video stream = Camera
+                        seenStreamIds.add(stream.id);
+                        if (remoteVideoRef.current) remoteVideoRef.current.srcObject = stream;
+                    } else {
+                        // Any subsequent new stream ID = Screen Share
+                        seenStreamIds.add(stream.id);
+                        setRemoteScreenStream(stream);
+                        setTab("screen");
+                    }
+                }
+            }
+        };
+
+        client = new Client({
+            brokerURL: import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8080/ws-native`,
             reconnectDelay: 5000,
             onConnect: () => {
-                console.log("[WS] Connected for Multi-Stream — Role:", role);
-
-                const pc = new RTCPeerConnection({
-                    iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
-                });
-                pcRef.current = pc;
+                if (!pc) return;
 
                 pc.onnegotiationneeded = async () => {
                     try {
-                        console.log("[WebRTC] Negotiation needed, sending offer...");
-                        const offer = await pc.createOffer();
-                        await pc.setLocalDescription(offer);
-                        client.publish({
+                        const offer = await pc!.createOffer();
+                        await pc!.setLocalDescription(offer);
+                        client!.publish({
                             destination: `/app/room/${sessionId}/signal`,
-                            body: JSON.stringify({ type: "offer", offer, sender: role }),
+                            body: JSON.stringify({ type: "offer", offer, sender: roleRef.current }),
                         });
-                    } catch (err) { console.error("Negotiation Error:", err); }
+                    } catch (e) { console.error("[PC] negotiation:", e); }
                 };
 
-                pc.onconnectionstatechange = () => {
-                    if (pc.connectionState === "connected") setPeerConnected(true);
-                    if (pc.connectionState === "disconnected" || pc.connectionState === "failed") setPeerConnected(false);
-                };
-
-                pc.ontrack = (event) => {
-                    console.log("[WebRTC] Inbound track received:", event.track.kind);
-                    const stream = event.streams[0];
-                    
-                    // Logic: First video stream is camera, others are screen
-                    // In a simple 1:1, we can check stream IDs or just order
-                    const videoTracks = pc.getRemoteStreams().flatMap(s => s.getVideoTracks());
-                    
-                    if (videoTracks.length > 1 && event.track.kind === "video") {
-                        console.log("[WebRTC] Inbound Screen Share detected");
-                        if (remoteScreenVideoRef.current) remoteScreenVideoRef.current.srcObject = stream;
-                        setTab("screen");
-                    } else if (event.track.kind === "video") {
-                        if (remoteVideoRef.current) remoteVideoRef.current.srcObject = stream;
-                    }
-                };
-
-                pc.onicecandidate = (event) => {
-                    if (event.candidate && client.connected) {
-                        client.publish({
-                            destination: `/app/room/${sessionId}/signal`,
-                            body: JSON.stringify({ type: "candidate", candidate: event.candidate, sender: role }),
-                        });
-                    }
-                };
-
-                // Normal camera & audio tracks
-                if (localStream) {
-                    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-                }
-
-                client.subscribe(`/topic/room/${sessionId}/signal`, async (msg) => {
+                client!.subscribe(`/topic/room/${sessionId}/signal`, async (msg) => {
                     const data = JSON.parse(msg.body);
-                    if (data.sender === role) return;
-
+                    if (data.sender === roleRef.current) return;
                     try {
                         if (data.type === "offer") {
-                            await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-                            while (iceQueue.current.length) { await pc.addIceCandidate(new RTCIceCandidate(iceQueue.current.shift()!)); }
-                            const answer = await pc.createAnswer();
-                            await pc.setLocalDescription(answer);
-                            client.publish({
+                            await pc!.setRemoteDescription(new RTCSessionDescription(data.offer));
+                            while (iceQueue.current.length) await pc!.addIceCandidate(new RTCIceCandidate(iceQueue.current.shift()!));
+                            const answer = await pc!.createAnswer();
+                            await pc!.setLocalDescription(answer);
+                            client!.publish({
                                 destination: `/app/room/${sessionId}/signal`,
-                                body: JSON.stringify({ type: "answer", answer, sender: role }),
+                                body: JSON.stringify({ type: "answer", answer, sender: roleRef.current }),
                             });
                         } else if (data.type === "answer") {
-                            await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-                            while (iceQueue.current.length) { await pc.addIceCandidate(new RTCIceCandidate(iceQueue.current.shift()!)); }
+                            await pc!.setRemoteDescription(new RTCSessionDescription(data.answer));
+                            while (iceQueue.current.length) await pc!.addIceCandidate(new RTCIceCandidate(iceQueue.current.shift()!));
                         } else if (data.type === "candidate") {
-                            if (pc.remoteDescription) { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } 
-                            else { iceQueue.current.push(data.candidate); }
+                            if (pc!.remoteDescription) await pc!.addIceCandidate(new RTCIceCandidate(data.candidate));
+                            else iceQueue.current.push(data.candidate);
                         } else if (data.type === "announce") {
-                            if (role === "TEACHER" && !pc.remoteDescription) {
-                                const offer = await pc.createOffer();
-                                await pc.setLocalDescription(offer);
-                                client.publish({
+                            if (roleRef.current === "TEACHER" && !pc!.remoteDescription) {
+                                const offer = await pc!.createOffer();
+                                await pc!.setLocalDescription(offer);
+                                client!.publish({
                                     destination: `/app/room/${sessionId}/signal`,
-                                    body: JSON.stringify({ type: "offer", offer, sender: role }),
+                                    body: JSON.stringify({ type: "offer", offer, sender: roleRef.current }),
                                 });
                             }
                         } else if (data.type === "SCREEN_OFF") {
+                            setRemoteScreenStream(null);
                             setTab("whiteboard");
+                        } else if (data.type === "PEER_LEFT") {
+                            setPeerConnected(false);
+                            setPeerLeft(true);
                         }
-                    } catch (e) { console.error("[WebRTC] Signaling Error:", e); }
+                    } catch (e) { console.error("[STOMP] signal:", e); }
                 });
 
-                client.subscribe(`/topic/session/${sessionId}`, async (msg) => {
-                    console.log("[WS] Session update received:", msg.body);
-                    // Fetch latest sessions to find this one's status
-                    try {
-                        const response = await api.get("/sessions/my-sessions");
-                        const sessions = response.data;
-                        const current = sessions.find((s: any) => s.sessionId === sessionId);
-                        if (current) {
-                            setSessionStatus(current.status);
-                            if (current.status === "IN_PROGRESS") {
-                                toast.success("Class has started!");
-                            }
-                        }
-                    } catch (err) {
-                        console.error("Failed to sync status", err);
+                announceTimer = setInterval(() => {
+                    if (pc?.connectionState !== "connected" && client?.connected) {
+                        client!.publish({
+                            destination: `/app/room/${sessionId}/signal`,
+                            body: JSON.stringify({ type: "announce", sender: roleRef.current }),
+                        });
+                    } else {
+                        if (announceTimer) clearInterval(announceTimer);
                     }
-                });
-
-                const announceInterval = setInterval(() => {
-                    if (pc.connectionState !== "connected" && client.connected) {
-                        client.publish({ destination: `/app/room/${sessionId}/signal`, body: JSON.stringify({ type: "announce", sender: role }) });
-                    } else { clearInterval(announceInterval); }
                 }, 2000);
 
+                stompClientRef.current = client;
                 setStompClient(client);
             },
-            onDisconnect: () => setStompClient(null)
+            onDisconnect: () => { stompClientRef.current = null; setStompClient(null); },
         });
 
         client.activate();
-        return () => { pcRef.current?.close(); client.deactivate(); };
-    }, [sessionId, role, localStream]); // Added localStream to deps to add tracks when it becomes available
+    };
 
-    // ── Screen Share Handler ──────────────────────────────────────────────────
+    useEffect(() => {
+        // Cleanup function for when component unmounts
+        return () => {
+            if (stompClientRef.current?.connected) {
+                try {
+                    stompClientRef.current.publish({
+                        destination: `/app/room/${sessionId}/signal`,
+                        body: JSON.stringify({ type: "PEER_LEFT", sender: roleRef.current }),
+                    });
+                } catch { /* ignore */ }
+            }
+            localCameraStreamRef.current?.getTracks().forEach(t => t.stop());
+            pcRef.current?.close();
+            stompClientRef.current?.deactivate();
+        };
+    }, [sessionId]);
+
+    const handleJoinRoom = () => {
+        setHasJoined(true);
+        startSetup();
+    };
+
     const handleScreenShare = async () => {
         if (isSharingScreen) {
             if (screenSenderRef.current && pcRef.current) {
@@ -443,60 +381,73 @@ const TeachingRoom = () => {
             setLocalScreenStream(null);
             setIsSharingScreen(false);
             setTab("whiteboard");
-            stompClient?.publish({ destination: `/app/room/${sessionId}/signal`, body: JSON.stringify({ type: "SCREEN_OFF", sender: role }) });
+            stompClientRef.current?.publish({
+                destination: `/app/room/${sessionId}/signal`,
+                body: JSON.stringify({ type: "SCREEN_OFF", sender: roleRef.current }),
+            });
             return;
         }
-
         try {
-            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+            const track = stream.getVideoTracks()[0];
+
+            if (pcRef.current) screenSenderRef.current = pcRef.current.addTrack(track, stream);
+
             setLocalScreenStream(stream);
             setIsSharingScreen(true);
             setTab("screen");
-
-            const track = stream.getVideoTracks()[0];
-            if (pcRef.current) {
-                screenSenderRef.current = pcRef.current.addTrack(track, stream);
-            }
-
-            track.onended = () => {
-                handleScreenShare(); // Toggle off
-            };
+            track.onended = () => handleScreenShare();
         } catch (err) {
-            console.error("Screen share error:", err);
+            console.error("[ScreenShare]", err);
             toast.error("Could not start screen sharing.");
         }
     };
 
-    // ── Helpers ────────────────────────────────────────────────────────────────
-    const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-
     const handleEndSession = async () => {
         if (window.confirm("Are you sure you want to end this session?")) {
-            try { await api.put(`/sessions/${sessionId}/status?status=COMPLETED`); } catch { /* fail silent */ }
+            if (stompClientRef.current?.connected) {
+                stompClientRef.current.publish({
+                    destination: `/app/room/${sessionId}/signal`,
+                    body: JSON.stringify({ type: "PEER_LEFT", sender: roleRef.current }),
+                });
+            }
+            try { await api.put(`/sessions/${sessionId}/status?status=COMPLETED`); } catch { /* silent */ }
             setShowFeedback(true);
         }
     };
 
-    const submitFeedback = () => { navigate("/dashboard"); };
+    const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
-    const startClass = async () => {
-        try {
-            await api.post(`/sessions/${sessionId}/agenda/start-class`, {});
-            setSessionStatus("IN_PROGRESS");
-            stopPoll(); // Stop polling — no longer needed
-            setShowStartPopup(true);
-            setTimeout(() => setShowStartPopup(false), 3000);
-            toast.success("Class started!");
-        } catch (error: any) {
-            const msg = error?.response?.data?.message || error?.message || "Failed to start class";
-            toast.error(`Could not start: ${msg}`);
-            console.error("[startClass] error:", error?.response?.data);
-        }
-    };
+    if (!hasJoined) {
+        return (
+            <div className="h-screen flex flex-col items-center justify-center bg-[#0a0a0a] text-white font-sans overflow-hidden p-6 relative">
+                {/* Subtle background glow */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                    <div className="w-[40rem] h-[40rem] bg-blue-500/20 rounded-full blur-[100px]"></div>
+                </div>
+
+                <div className="z-10 bg-white/5 border border-white/10 p-10 md:p-14 rounded-3xl flex flex-col items-center text-center max-w-lg shadow-2xl backdrop-blur-xl w-full">
+                    <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mb-6 shadow-inner border border-white/20">
+                        <Video className="w-10 h-10 text-white" />
+                    </div>
+                    <h1 className="text-3xl md:text-4xl font-serif italic mb-3 tracking-tight">Join Session</h1>
+                    <p className="text-gray-400 text-sm mb-8 leading-relaxed px-4">
+                        You are about to enter the room as <span className="text-white font-medium">{role}</span> with <span className="text-white font-medium">{partnerName}</span>. 
+                        Your browser will ask for camera and microphone permissions when you click join.
+                    </p>
+                    <Button onClick={handleJoinRoom} className="w-full bg-white hover:bg-gray-200 text-black uppercase tracking-widest text-xs font-bold h-14 rounded-xl shadow-lg transition-transform hover:scale-[1.02]">
+                        Join Room
+                    </Button>
+                    <button onClick={() => navigate("/dashboard")} className="mt-6 text-[10px] uppercase tracking-widest text-gray-500 hover:text-white transition-colors">
+                        Return to Dashboard
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="h-screen flex flex-col bg-[#0a0a0a] text-white font-sans overflow-hidden">
-            {/* Header */}
             <header className="h-14 bg-black border-b border-white/10 flex items-center justify-between px-3 md:px-6 shrink-0 z-50">
                 <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
                     <button onClick={() => navigate("/dashboard")} className="text-gray-400 hover:text-white transition-colors shrink-0">
@@ -504,8 +455,8 @@ const TeachingRoom = () => {
                     </button>
                     <div className="truncate">
                         <div className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold flex items-center gap-1.5 md:gap-2">
-                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${peerConnected ? "bg-green-500 shadow-[0_0_8px_#22c55e]" : "bg-yellow-500 animate-pulse"}`} />
-                           <span className="truncate">{role} · {skillName}</span>
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${peerConnected ? "bg-green-500 shadow-[0_0_8px_#22c55e]" : "bg-yellow-500 animate-pulse"}`} />
+                            <span className="truncate">{role} · {skillName}</span>
                         </div>
                         <div className="font-serif text-[10px] md:text-sm italic tracking-wide truncate opacity-80">{partnerName}</div>
                     </div>
@@ -523,60 +474,43 @@ const TeachingRoom = () => {
                 </div>
 
                 <div className="flex items-center gap-2 md:gap-4">
-                    {role?.toUpperCase() === "TEACHER" && (sessionStatus?.toUpperCase() === "ACCEPTED" || sessionStatus?.toUpperCase() === "AGENDA_PHASE") && (
-                        <Button 
-                            onClick={startClass}
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white uppercase tracking-widest text-[9px] h-8 px-4"
-                        >
-                            Start Class
-                        </Button>
-                    )}
                     <div className="hidden xs:block sm:hidden font-mono text-[10px] text-white/40 mr-1">{fmt(elapsed)}</div>
                     <button onClick={handleEndSession} className="text-[9px] md:text-[10px] uppercase tracking-widest text-gray-500 hover:text-red-500 font-bold transition-colors">
                         End
                     </button>
-                    <div className="flex items-center gap-1 md:gap-2 sm:hidden">
-                        <div className="w-6 h-[1px] bg-white/20" />
-                    </div>
                 </div>
             </header>
 
-            {/* Main Layout */}
             <main className="flex-1 flex flex-col md:flex-row overflow-hidden p-2 md:p-4 gap-2 md:gap-4">
                 <div className="flex-1 flex flex-col gap-2 md:gap-4 min-w-0">
                     <div className="flex-1 bg-black/40 rounded-xl md:rounded-2xl border border-white/5 overflow-hidden backdrop-blur-sm relative">
                         {tab === "whiteboard" && <Whiteboard stompClient={stompClient} sessionId={sessionId} role={role} />}
+
                         {tab === "agenda" && (
                             <div className="h-full flex items-center justify-center p-4 md:p-8 overflow-y-auto">
                                 <AgendaPanel
-                                    sessionId={sessionId}
-                                    role={role}
-                                    sessionStatus={sessionStatus}
-                                    onStatusChange={setSessionStatus}
-                                    onProgressChange={setCompletionPct}
-                                    refreshTrigger={0}
+                                    sessionId={sessionId} role={role} sessionStatus={"IN_PROGRESS"}
+                                    onStatusChange={() => {}} onProgressChange={setCompletionPct} refreshTrigger={0}
                                 />
-                            </div>
-                        )}
-                        {tab === "screen" && (
-                            <div className="h-full w-full bg-black flex items-center justify-center relative">
-                                <video ref={isSharingScreen ? null : remoteScreenVideoRef} autoPlay playsInline className="max-w-full max-h-full object-contain" srcObject={isSharingScreen ? localScreenStream : null} />
-                                {isSharingScreen && <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-500 px-4 py-1 rounded-full text-[10px] uppercase tracking-widest font-bold">You are presenting</div>}
                             </div>
                         )}
 
-                        {/* Video Overlays */}
+                        {tab === "screen" && (
+                            <div className="h-full w-full bg-black flex items-center justify-center relative">
+                                {isSharingScreen ? (
+                                    <video autoPlay playsInline muted className="max-w-full max-h-full object-contain" ref={(el) => { if (el && localScreenStream) el.srcObject = localScreenStream; }} />
+                                ) : (
+                                    <video key={remoteScreenStream?.id ?? "no-screen"} autoPlay playsInline className="max-w-full max-h-full object-contain" ref={(el) => { if (el && remoteScreenStream) el.srcObject = remoteScreenStream; }} />
+                                )}
+                                {isSharingScreen && (
+                                    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-500 px-4 py-1 rounded-full text-[10px] uppercase tracking-widest font-bold">You are presenting</div>
+                                )}
+                            </div>
+                        )}
+
                         <div className="absolute bottom-2 right-2 md:bottom-6 md:right-6 flex flex-row gap-2 z-30">
-                            {/* Local Video */}
                             <div className="w-20 md:w-48 aspect-video bg-gray-900 rounded-lg md:rounded-xl border border-white/10 shadow-2xl overflow-hidden relative">
-                                <video
-                                    ref={localVideoRef}
-                                    autoPlay
-                                    playsInline
-                                    muted
-                                    className={`w-full h-full object-cover ${isSharingScreen ? "" : "scale-x-[-1]"}`}
-                                />
+                                <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" />
                                 {!videoOn && (
                                     <div className="absolute inset-0 bg-gray-950 flex items-center justify-center">
                                         <div className="w-8 md:w-12 h-8 md:h-12 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
@@ -586,20 +520,14 @@ const TeachingRoom = () => {
                                 )}
                                 <div className="absolute top-1 left-1 px-1.5 py-0.5 bg-black/60 rounded text-[6px] md:text-[8px] uppercase tracking-tighter">You</div>
                                 {!micOn && (
-                                    <div className="absolute top-1 right-1 p-0.5 md:p-1 bg-red-500/80 rounded-full border border-white/10">
+                                    <div className="absolute top-1 right-1 p-0.5 md:p-1 bg-red-500/80 rounded-full">
                                         <MicOff className="w-2 md:w-3 h-2 md:h-3 text-white" />
                                     </div>
                                 )}
                             </div>
 
-                            {/* Remote Video */}
                             <div className="w-20 md:w-48 aspect-video bg-gray-900 rounded-lg md:rounded-xl border border-white/10 shadow-2xl overflow-hidden relative">
-                                <video
-                                    ref={remoteVideoRef}
-                                    autoPlay
-                                    playsInline
-                                    className="w-full h-full object-cover"
-                                />
+                                <video ref={remoteVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
                                 <AnimatePresence>
                                     {!peerConnected && (
                                         <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-1 md:gap-2 pointer-events-none">
@@ -615,43 +543,35 @@ const TeachingRoom = () => {
                         </div>
                     </div>
 
-                    {/* Toolbar */}
                     <div className="h-16 md:h-20 bg-white/5 rounded-xl md:rounded-2xl border border-white/5 backdrop-blur-md flex items-center justify-between px-4 md:px-8 shrink-0">
                         <div className="flex items-center gap-2 md:gap-4">
-                            <ControlBtn active={micOn} onClick={() => setMicOn(!micOn)} danger={!micOn} className="h-10 w-10 md:h-12 md:w-12">
+                            <ControlBtn active={micOn} onClick={() => setMicOn(v => !v)} danger={!micOn} className="h-10 w-10 md:h-12 md:w-12">
                                 {micOn ? <Mic className="w-4 h-4 md:w-5 md:h-5" /> : <MicOff className="w-4 h-4 md:w-5 md:h-5" />}
                             </ControlBtn>
-                            <ControlBtn active={videoOn} onClick={() => setVideoOn(!videoOn)} danger={!videoOn} className="h-10 w-10 md:h-12 md:w-12">
+                            <ControlBtn active={videoOn} onClick={() => setVideoOn(v => !v)} danger={!videoOn} className="h-10 w-10 md:h-12 md:w-12">
                                 {videoOn ? <Video className="w-4 h-4 md:w-5 md:h-5" /> : <VideoOff className="w-4 h-4 md:w-5 md:h-5" />}
                             </ControlBtn>
                         </div>
 
                         <div className="flex items-center gap-1 md:gap-2 p-1 bg-black/40 rounded-lg md:rounded-xl border border-white/5">
                             {(["whiteboard", "agenda"] as const).map(t => (
-                                <button
-                                    key={t}
-                                    onClick={() => setTab(t)}
-                                    className={`px-3 md:px-6 py-2 md:py-2.5 rounded-md md:rounded-lg text-[9px] md:text-xs font-bold uppercase tracking-widest transition-all ${tab === t ? "bg-white text-black shadow-lg" : "text-gray-500 hover:text-white"}`}
-                                >
+                                <button key={t} onClick={() => setTab(t)}
+                                    className={`px-3 md:px-6 py-2 md:py-2.5 rounded-md md:rounded-lg text-[9px] md:text-xs font-bold uppercase tracking-widest transition-all ${tab === t ? "bg-white text-black shadow-lg" : "text-gray-500 hover:text-white"}`}>
                                     {t}
                                 </button>
                             ))}
-                            {tab === "screen" && <div className="px-3 md:px-6 py-2 md:py-2.5 rounded-md md:rounded-lg text-[9px] md:text-xs font-bold uppercase tracking-widest bg-blue-500 text-white animate-pulse">Screen</div>}
+                            {tab === "screen" && (
+                                <div className="px-3 md:px-6 py-2 md:py-2.5 rounded-md md:rounded-lg text-[9px] md:text-xs font-bold uppercase tracking-widest bg-blue-500 text-white animate-pulse">
+                                    Screen
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex items-center gap-2 md:gap-4">
-                            <ControlBtn
-                                onClick={handleScreenShare}
-                                active={isSharingScreen}
-                                className={`h-10 w-10 md:h-12 md:w-12 ${isSharingScreen ? "bg-blue-500/20 text-blue-500 border-blue-500/50" : ""}`}
-                            >
+                            <ControlBtn onClick={handleScreenShare} active={isSharingScreen} className={`h-10 w-10 md:h-12 md:w-12 ${isSharingScreen ? "bg-blue-500/20 text-blue-500 border-blue-500/50" : ""}`}>
                                 <Monitor className="w-4 h-4 md:w-5 md:h-5" />
                             </ControlBtn>
-                            <ControlBtn
-                                onClick={handleEndSession}
-                                danger
-                                className="h-10 w-10 md:h-12 md:w-12 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20"
-                            >
+                            <ControlBtn onClick={handleEndSession} danger className="h-10 w-10 md:h-12 md:w-12 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20">
                                 <PhoneOff className="w-4 h-4 md:w-5 md:h-5" />
                             </ControlBtn>
                         </div>
@@ -659,35 +579,82 @@ const TeachingRoom = () => {
                 </div>
             </main>
 
-            {/* Modals */}
+            {/* Permission Error Modal */}
             <AnimatePresence>
-                {role?.toUpperCase() === "LEARNER" &&
-                    sessionStatus !== "" &&
-                    sessionStatus?.toUpperCase() !== "IN_PROGRESS" &&
-                    sessionStatus?.toUpperCase() !== "COMPLETED" && (
+                {cameraPermissionError && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-6 md:p-8 backdrop-blur-md">
-                        <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 rounded-full flex items-center justify-center mb-6 md:mb-8 border border-white/20"><Clock className="w-8 h-8 md:w-10 md:h-10 text-white animate-spin-slow" /></div>
-                        <h2 className="text-3xl md:text-5xl font-serif italic mb-4 text-center leading-tight">Waiting for the Lesson to Start</h2>
-                        <p className="text-gray-400 text-sm md:text-lg text-center max-w-md font-light leading-relaxed mb-8">Your teacher, <span className="text-white font-medium">{partnerName}</span>, is preparing the agenda. You'll be admitted automatically.</p>
-                        <Button variant="outline" onClick={() => navigate("/dashboard")} className="rounded-none border-white/20 text-[10px] px-8 uppercase tracking-widest h-12">Back to Dashboard</Button>
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center mb-6 md:mb-8">
+                            <AlertCircle className="w-8 h-8 md:w-10 md:h-10 text-red-500" />
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-serif italic mb-4 text-center leading-tight">Camera Permission Required</h2>
+                        
+                        {permissionErrorType === "unsupported" && (
+                            <p className="text-gray-400 text-sm md:text-lg text-center max-w-lg font-light leading-relaxed mb-8">
+                                Your browser is blocking access because the connection is not secure. <strong className="text-white">Browsers require HTTPS or 'localhost'</strong> to use the camera. If you are accessing via an IP address (like 192.168...), please use localhost instead.
+                            </p>
+                        )}
+                        {permissionErrorType === "denied" && (
+                            <div className="flex flex-col items-center mb-8">
+                                <p className="text-gray-400 text-sm md:text-lg text-center max-w-lg font-light leading-relaxed mb-4">
+                                    You have previously blocked camera access for this site. The browser will not ask again automatically.
+                                </p>
+                                <div className="bg-white/5 border border-white/10 p-4 rounded-xl text-left max-w-md">
+                                    <p className="text-white text-sm font-bold mb-2">How to fix this:</p>
+                                    <ol className="text-gray-400 text-xs md:text-sm list-decimal list-inside space-y-2">
+                                        <li>Click the <strong className="text-white">Lock icon (🔒)</strong> or Settings icon in your browser's address bar (top left).</li>
+                                        <li>Find <strong className="text-white">Camera</strong> and <strong className="text-white">Microphone</strong>.</li>
+                                        <li>Change the setting from "Block" to <strong className="text-white">"Allow"</strong>.</li>
+                                        <li>Click the Retry button below.</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        )}
+                        {permissionErrorType === "other" && (
+                            <p className="text-gray-400 text-sm md:text-lg text-center max-w-md font-light leading-relaxed mb-8">
+                                We could not detect a camera or microphone. Please ensure your hardware is connected and try again.
+                            </p>
+                        )}
+
+                        <div className="flex gap-4">
+                            <Button variant="outline" onClick={() => navigate("/dashboard")} className="rounded-none border-white/20 text-[10px] px-8 uppercase tracking-widest h-12">
+                                Back to Dashboard
+                            </Button>
+                            <Button onClick={startSetup} className="rounded-none bg-white text-black text-[10px] px-8 uppercase tracking-widest h-12">
+                                Retry Permissions
+                            </Button>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
+            {/* Peer left */}
             <AnimatePresence>
-                {showStartPopup && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: -20 }} 
-                        animate={{ opacity: 1, y: 0 }} 
-                        exit={{ opacity: 0, y: -20 }} 
-                        className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-green-500 text-white px-8 py-3 rounded-full shadow-2xl flex items-center gap-3 border border-white/20 backdrop-blur-md"
-                    >
-                        <CheckCircle2 className="w-5 h-5" />
-                        <span className="font-bold uppercase tracking-widest text-xs">Class Started · Agenda is Optional</span>
+                {peerLeft && !showFeedback && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-lg">
+                        <motion.div initial={{ scale: 0.85, y: 30 }} animate={{ scale: 1, y: 0 }}
+                            className="bg-[#111] border border-white/10 text-white w-full max-w-sm p-8 rounded-2xl flex flex-col items-center text-center shadow-2xl">
+                            <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center mb-5">
+                                <UserX className="w-8 h-8 text-red-400" />
+                            </div>
+                            <h2 className="text-xl font-bold mb-2">{partnerName} has left</h2>
+                            <p className="text-gray-400 text-sm mb-8 leading-relaxed">
+                                Your session partner has disconnected. You can end the session or wait for them to reconnect.
+                            </p>
+                            <div className="flex flex-col gap-3 w-full">
+                                <Button onClick={handleEndSession} className="w-full bg-red-600 hover:bg-red-700 text-white uppercase tracking-widest text-[10px] h-12 rounded-xl">
+                                    End Session
+                                </Button>
+                                <Button variant="outline" onClick={() => setPeerLeft(false)} className="w-full border-white/10 text-gray-400 hover:text-white uppercase tracking-widest text-[10px] h-12 rounded-xl">
+                                    Wait for Reconnect
+                                </Button>
+                            </div>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
+            {/* Session ended */}
             <AnimatePresence>
                 {showFeedback && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-lg">
@@ -695,7 +662,9 @@ const TeachingRoom = () => {
                             <div className="absolute top-0 left-0 w-full h-1 bg-black" />
                             <h2 className="text-2xl font-serif italic mb-2 tracking-tight">Session Concluded</h2>
                             <p className="text-gray-500 text-xs uppercase tracking-widest mb-10 font-bold">Feedback module coming soon</p>
-                            <Button onClick={submitFeedback} className="w-full rounded-none bg-black text-white uppercase tracking-widest text-[10px] h-14">Return to Dashboard</Button>
+                            <Button onClick={() => navigate("/dashboard")} className="w-full rounded-none bg-black text-white uppercase tracking-widest text-[10px] h-14">
+                                Return to Dashboard
+                            </Button>
                         </motion.div>
                     </motion.div>
                 )}

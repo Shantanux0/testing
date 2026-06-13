@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
-import { resumeApi, Education, Experience, Certification, CodingStat } from "@/lib/api";
+import { resumeApi, Education, Experience, Certification, CodingStat, getErrorMessage } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,13 +50,13 @@ const Resume = () => {
       toast.success(`${type} saved`);
       loadData();
       setActiveDialog(null); setEditingItem(null);
-    } catch (e: any) { toast.error(e.message || "Error saving"); }
+    } catch (e: any) { toast.error(getErrorMessage(e)); }
   };
 
   const handleDelete = async (apiDelete: any, id: number) => {
     if (!confirm("Delete this entry?")) return;
     try { await apiDelete(id); toast.success("Deleted"); loadData(); }
-    catch (e: any) { toast.error("Delete failed"); }
+    catch (e: any) { toast.error(getErrorMessage(e)); }
   };
 
   const fadeInUp = {

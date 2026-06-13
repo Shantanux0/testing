@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
-import { sessionApi, profileApi, Session, UserProfile } from "@/lib/api";
+import { sessionApi, profileApi, Session, UserProfile, getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,7 +77,7 @@ const Sessions = () => {
       setSelectedSkill("");
       toast.success("Session requested successfully");
     } catch (error: any) {
-      toast.error(error.message || "Failed to request session");
+      toast.error(getErrorMessage(error));
     } finally {
       setRequesting(false);
     }
@@ -89,7 +89,7 @@ const Sessions = () => {
       await loadSessions();
       toast.success("Session status updated successfully");
     } catch (error: any) {
-      toast.error(error.message || "Failed to update session status");
+      toast.error(getErrorMessage(error));
     }
   };
 

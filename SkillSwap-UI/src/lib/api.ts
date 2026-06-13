@@ -1,8 +1,8 @@
 import axios from "axios";
 
-// Detect if running on localhost or network IP
+// Detect if running on localhost or use environment variable for production
 const hostname = window.location.hostname;
-const API_BASE_URL = `http://${hostname}:8080/api`;
+const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${hostname}:8080/api`;
 
 export const getAuthToken = () => localStorage.getItem("token");
 export const setAuthToken = (token: string | null) => {
@@ -61,7 +61,7 @@ export const authApi = {
   verifyOtp: (data: any) => api.post("/auth/verify-otp", data).then((res) => res.data),
   resendOtp: (email: string) => api.post(`/auth/send-otp?email=${email}`, null).then((res) => res.data),
   // Aliases for AuthContext compatibility
-  register: (e: string, p: string) => api.post("/auth/register", { email: e, password: p }).then(res => res.data),
+  register: (e: string, p: string, n: string) => api.post("/auth/register", { email: e, password: p, name: n }).then(res => res.data),
   login: (e: string, p: string) => api.post("/auth/login", { email: e, password: p }).then(res => res.data),
   logout: () => Promise.resolve(),
 };
@@ -274,4 +274,32 @@ export const notificationApi = {
   markRead: (id: number) => api.put(`/notifications/${id}/read`).then((res) => res.data),
 };
 
+export const getErrorMessage = (error: any): string => {
+  if (!error) return "An unexpected error occurred.";
+  
+  if (error.response?.data) {
+    const data = error.response.data;
+    
+    if (data.errors && typeof data.errors === 'object') {
+      const fieldErrors = Object.entries(data.errors)
+        .map(([field, msg]) => `${field}: ${msg}`)
+        .join(', ');
+      if (fieldErrors) return fieldErrors;
+    }
+    
+    if (typeof data.message === 'string') {
+      return data.message;
+    }
+    
+    if (typeof data === 'string') {
+      return data;
+    }
+    
+    return JSON.stringify(data);
+  }
+  
+  return error.message || "An unexpected error occurred.";
+};
+
 export default api;
+

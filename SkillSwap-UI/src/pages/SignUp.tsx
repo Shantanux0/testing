@@ -1,12 +1,13 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { authApi } from "@/lib/api";
+import { authApi, getErrorMessage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Sparkles, Eye, EyeOff } from "lucide-react";
 
 const SignUp = () => {
   const navigate = useNavigate();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -31,14 +32,11 @@ const SignUp = () => {
 
     setLoading(true);
     try {
-      await authApi.register(email, password);
+      await authApi.register(email, password, name);
       navigate("/verify", { state: { email } });
     } catch (err: any) {
       console.error(err);
-      const errorMessage = err?.message?.includes("API")
-        ? err.message.split(": ")[1] || "Unable to sign up. Please try again."
-        : "Unable to sign up. Please try again.";
-      setError(errorMessage);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -87,6 +85,18 @@ const SignUp = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs uppercase tracking-widest font-bold text-gray-900">Full Name</label>
+              <Input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="Your full name"
+                className="h-12 rounded-none border-gray-200 focus:ring-0 focus:border-black transition-colors"
+              />
+            </div>
+
             <div className="space-y-2">
               <label className="text-xs uppercase tracking-widest font-bold text-gray-900">Email Address</label>
               <Input
