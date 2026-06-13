@@ -66,7 +66,7 @@ public class AuthServiceImpl implements ProfileService {
         try{
             emailService.sendResetOtpEmail(existingEntity.getEmail(), otp);
         } catch(Exception ex) {
-            throw new RuntimeException("Unable to send email");
+            System.err.println("Failed to send reset OTP email to " + existingEntity.getEmail() + ": " + ex.getMessage());
         }
 
     }
@@ -90,7 +90,11 @@ public class AuthServiceImpl implements ProfileService {
         existingUser.setResetOtpExpireAt(0L);
 
         // After saving new password
-        emailService.sendPasswordChangedEmail(email);
+        try {
+            emailService.sendPasswordChangedEmail(email);
+        } catch (Exception e) {
+            System.err.println("Failed to send password changed email to " + email + ": " + e.getMessage());
+        }
         userAuthRepo.save(existingUser);
 
 
@@ -121,7 +125,7 @@ public class AuthServiceImpl implements ProfileService {
         try {
             emailService.sendOtpEmail(existingUser.getEmail(), otp);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to send email");
+            System.err.println("Failed to send verification OTP email to " + existingUser.getEmail() + ": " + e.getMessage());
         }
 
     }
@@ -143,6 +147,13 @@ public class AuthServiceImpl implements ProfileService {
         existingUser.setVerifyOtpExpireAt(0L);
 
         userAuthRepo.save(existingUser);
+
+        try {
+            emailService.sendWelcomeEmail(existingUser.getEmail(), existingUser.getName());
+        } catch (Exception e) {
+            // Log warning but don't fail verification if only the welcome email fails to send
+            System.err.println("Failed to send welcome email to " + existingUser.getEmail() + ": " + e.getMessage());
+        }
     }
 
 

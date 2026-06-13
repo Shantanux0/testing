@@ -13,13 +13,17 @@ public class EmailService {
     @Value("${spring.mail.properties.mail.smtp.from}")
     private String fromEmail;
 
+    private void sendEmail(SimpleMailMessage message) {
+        javaMailSender.send(message);
+    }
+
     public void sendWelcomeEmail(String toEmail, String name) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
         message.setTo(toEmail);
         message.setSubject("Welcome to Our Platform");
         message.setText("Hello " + name + ",\n\nThanks for registering with us!\n\nRegards,\nSkillSwap Team");
-        javaMailSender.send(message);
+        sendEmail(message);
 
     }
 
@@ -41,7 +45,7 @@ public class EmailService {
                         "Stay secure,\n" +
                         "SkillSwap Team");
 
-        javaMailSender.send(message);
+        sendEmail(message);
     }
 
     public void sendResetOtpEmail(String toEmail, String otp) {
@@ -51,7 +55,7 @@ public class EmailService {
         message.setSubject("Password Reset OTP");
         message.setText("Your OTP for resetting your password is " + otp
                 + ". Use this OTP to proceed with resetting your password.");
-        javaMailSender.send(message);
+        sendEmail(message);
 
     }
 
@@ -61,7 +65,7 @@ public class EmailService {
         message.setTo(toEmail);
         message.setSubject("Account Verification OTP");
         message.setText("Your OTP is " + otp + ". Verify your account using this OTP.");
-        javaMailSender.send(message);
+        sendEmail(message);
 
     }
 
@@ -76,7 +80,7 @@ public class EmailService {
                 "Please visit the site to view your matches and start swapping skills!\n\n" +
                 "Happy Learning,\n" +
                 "SkillSwap Team");
-        javaMailSender.send(message);
+        sendEmail(message);
     }
 
     public void sendStillSearchingEmail(String toEmail, String name, String skillToLearn, String skillToTeach) {
@@ -90,6 +94,6 @@ public class EmailService {
                 "We'll notify you as soon as someone matches your criteria. Hang tight!\n\n" +
                 "Best Regards,\n" +
                 "SkillSwap Team");
-        javaMailSender.send(message);
+        sendEmail(message);
     }
 }
