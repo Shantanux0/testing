@@ -125,6 +125,71 @@ const Whiteboard = ({ stompClient, sessionId, role }: WhiteboardProps) => {
     );
 };
 
+const EMOJIS = ["😡", "🙁", "😐", "🙂", "😍"];
+
+const FeedbackModal = ({ sessionId, onClose }: { sessionId: number; onClose: () => void }) => {
+    const [rating, setRating] = useState<number>(0);
+    const [comment, setComment] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmit = async () => {
+        if (rating === 0) {
+            toast.error("Please select an emoji rating.");
+            return;
+        }
+        setSubmitting(true);
+        try {
+            await api.post(`/sessions/${sessionId}/feedback`, { rating, comment });
+            toast.success("Feedback submitted successfully!");
+            onClose();
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Failed to submit feedback");
+            onClose();
+        }
+    };
+
+    return (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-lg">
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white text-black w-full max-w-md p-10 relative shadow-2xl">
+                <div className="absolute top-0 left-0 w-full h-1 bg-black" />
+                <h2 className="text-3xl font-serif italic mb-2 tracking-tight text-center">Session Concluded</h2>
+                <p className="text-gray-500 text-xs uppercase tracking-widest mb-8 text-center font-bold">How was your session?</p>
+                
+                <div className="flex justify-between mb-8 px-4">
+                    {EMOJIS.map((emoji, index) => (
+                        <button 
+                            key={index} 
+                            onClick={() => setRating(index + 1)}
+                            className={`text-4xl transition-all duration-300 hover:scale-125 ${rating === index + 1 ? 'scale-125 filter grayscale-0 opacity-100' : 'opacity-40 filter grayscale hover:grayscale-0'}`}
+                        >
+                            {emoji}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="mb-8">
+                    <label className="block text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-2">Additional Comments</label>
+                    <textarea 
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 p-4 min-h-[100px] text-sm focus:border-black focus:ring-0 outline-none transition-all resize-none"
+                        placeholder="Tell us about your experience..."
+                    />
+                </div>
+
+                <div className="flex gap-4">
+                    <Button onClick={onClose} variant="outline" className="w-1/3 rounded-none border-gray-200 text-gray-500 uppercase tracking-widest text-[10px] h-14">
+                        Skip
+                    </Button>
+                    <Button onClick={handleSubmit} disabled={submitting} className="w-2/3 rounded-none bg-black text-white uppercase tracking-widest text-[10px] h-14">
+                        {submitting ? "Submitting..." : "Submit Feedback"}
+                    </Button>
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+};
+
 const TeachingRoom = () => {
     useAuth(); // Just to ensure protected route context is accessed
     const navigate = useNavigate();
@@ -498,9 +563,9 @@ const TeachingRoom = () => {
                         {tab === "screen" && (
                             <div className="h-full w-full bg-black flex items-center justify-center relative">
                                 {isSharingScreen ? (
-                                    <video autoPlay playsInline muted className="max-w-full max-h-full object-contain" ref={(el) => { if (el && localScreenStream) el.srcObject = localScreenStream; }} />
+                                    <video autoPlay playsInline muted className="max-w-full max-h-full object-contain" ref={(el) => { if (el && localScreenStream && el.srcObject !== localScreenStream) el.srcObject = localScreenStream; }} />
                                 ) : (
-                                    <video key={remoteScreenStream?.id ?? "no-screen"} autoPlay playsInline className="max-w-full max-h-full object-contain" ref={(el) => { if (el && remoteScreenStream) el.srcObject = remoteScreenStream; }} />
+                                    <video key={remoteScreenStream?.id ?? "no-screen"} autoPlay playsInline className="max-w-full max-h-full object-contain" ref={(el) => { if (el && remoteScreenStream && el.srcObject !== remoteScreenStream) el.srcObject = remoteScreenStream; }} />
                                 )}
                                 {isSharingScreen && (
                                     <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-blue-500 px-4 py-1 rounded-full text-[10px] uppercase tracking-widest font-bold">You are presenting</div>
@@ -657,16 +722,7 @@ const TeachingRoom = () => {
             {/* Session ended */}
             <AnimatePresence>
                 {showFeedback && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-lg">
-                        <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} className="bg-white text-black w-full max-w-md p-10 relative">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-black" />
-                            <h2 className="text-2xl font-serif italic mb-2 tracking-tight">Session Concluded</h2>
-                            <p className="text-gray-500 text-xs uppercase tracking-widest mb-10 font-bold">Feedback module coming soon</p>
-                            <Button onClick={() => navigate("/dashboard")} className="w-full rounded-none bg-black text-white uppercase tracking-widest text-[10px] h-14">
-                                Return to Dashboard
-                            </Button>
-                        </motion.div>
-                    </motion.div>
+                    <FeedbackModal sessionId={sessionId} onClose={() => navigate("/dashboard")} />
                 )}
             </AnimatePresence>
         </div>

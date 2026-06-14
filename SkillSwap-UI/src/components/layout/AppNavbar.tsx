@@ -63,6 +63,18 @@ const AppNavbar = () => {
         } catch (e) { }
     };
 
+    const handleNotificationClick = async (n: any) => {
+        if (!n.read) await handleMarkRead(n.id);
+        
+        if (n.relatedEntityType === "SESSION") {
+            navigate("/swaps");
+        } else {
+            navigate("/dashboard");
+        }
+        
+        setIsMobileMenuOpen(false); // Close mobile menu if open
+    };
+
     const navLinks = [
         { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
         { name: "Create Swap", path: "/create-swap", icon: Plus },
@@ -109,7 +121,7 @@ const AppNavbar = () => {
                                         <div className="text-center py-8 text-gray-400 text-xs">No notifications yet.</div>
                                     ) : (
                                         (notifications || []).map((n) => (
-                                            <DropdownMenuItem key={n.id} onClick={() => handleMarkRead(n.id)} className={`flex flex-col items-start gap-1 p-3 cursor-pointer rounded-lg ${!n.read ? 'bg-blue-50/50' : ''}`}>
+                                            <DropdownMenuItem key={n.id} onClick={() => handleNotificationClick(n)} className={`flex flex-col items-start gap-1 p-3 cursor-pointer rounded-lg ${!n.read ? 'bg-blue-50/50' : ''}`}>
                                                 <div className="flex items-center gap-2 w-full">
                                                     <div className={`p-1.5 rounded-full ${n.type === 'SUCCESS' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}`}>
                                                         {n.type === 'SUCCESS' ? <CheckCircle2 className="w-3 h-3" /> : n.type === 'WARNING' ? <Sparkles className="w-3 h-3 text-amber-600" /> : <Bell className="w-3 h-3" />}

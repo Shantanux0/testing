@@ -18,6 +18,7 @@ import TeachingRoom from "./pages/TeachingRoom";
 import OTP from "./pages/OTP";
 import AboutUs from "./pages/AboutUs";
 import CreateSwap from "./pages/CreateSwap";
+import ForgotPassword from "./pages/ForgotPassword";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/verify" element={<OTP />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route
               path="/dashboard"
               element={(

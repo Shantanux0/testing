@@ -90,7 +90,7 @@ const SignIn = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs uppercase tracking-widest font-bold text-gray-900">Password</label>
-                <Link to="#" className="text-xs text-gray-500 hover:text-black hover:underline uppercase tracking-wide">
+                <Link to="/forgot-password" className="text-xs text-gray-500 hover:text-black hover:underline uppercase tracking-wide">
                   Forgot password?
                 </Link>
               </div>

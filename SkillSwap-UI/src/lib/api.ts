@@ -60,6 +60,8 @@ export const authApi = {
   signin: (data: any) => api.post("/auth/login", data).then((res) => res.data),
   verifyOtp: (data: any) => api.post("/auth/verify-otp", data).then((res) => res.data),
   resendOtp: (email: string) => api.post(`/auth/send-otp?email=${email}`, null).then((res) => res.data),
+  sendResetOtp: (email: string) => api.post(`/auth/send-reset-otp?email=${email}`, null).then((res) => res.data),
+  resetPassword: (data: any) => api.post("/auth/reset-password", data).then((res) => res.data),
   // Aliases for AuthContext compatibility
   register: (e: string, p: string, n: string) => api.post("/auth/register", { email: e, password: p, name: n }).then(res => res.data),
   login: (e: string, p: string) => api.post("/auth/login", { email: e, password: p }).then(res => res.data),
@@ -266,6 +268,7 @@ export interface NotificationDto {
   read: boolean; // mapped from isRead
   createdAt: string;
   relatedEntityId?: number;
+  relatedEntityType?: string;
 }
 
 export const notificationApi = {

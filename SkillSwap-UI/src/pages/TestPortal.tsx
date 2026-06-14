@@ -113,8 +113,7 @@ const TestPortal = () => {
   };
 
   const handleAnswer = (questionId: number, fullOptionText: string) => {
-    const optionLetter = (fullOptionText || " ").charAt(0);
-    setAnswers(prev => ({ ...prev, [questionId]: optionLetter }));
+    setAnswers(prev => ({ ...prev, [questionId]: fullOptionText }));
   };
 
   const handleSubmitTest = async () => {
@@ -155,7 +154,7 @@ const TestPortal = () => {
     resultId: -1,
     testId: -1,
     skillName: "React.js (Demo)",
-    score: 80,
+    score: 12, // Backend sends raw count as score
     totalQuestions: 15,
     correctAnswers: 12,
     isPassed: true,
@@ -170,7 +169,7 @@ const TestPortal = () => {
   const handleViewHistory = async (testId: number) => {
     if (testId < 0) {
       // Demo Mode
-      setTestResult(testId === -1 ? DEMO_RESULT : { ...DEMO_RESULT, resultId: -2, skillName: "Java (Demo)", score: 40, correctAnswers: 6, isPassed: false });
+      setTestResult(testId === -1 ? DEMO_RESULT : { ...DEMO_RESULT, resultId: -2, skillName: "Java (Demo)", score: 6, correctAnswers: 6, isPassed: false });
       setMode("result");
       return;
     }
@@ -315,8 +314,7 @@ const TestPortal = () => {
 
           <div className="space-y-3 md:space-y-4">
             {currentQ.options.map((opt, idx) => {
-              const letter = (opt || " ").charAt(0); // "A"
-              const isSelected = answers[currentQ.questionNumber || 0] === letter;
+              const isSelected = answers[currentQ.questionNumber || 0] === opt;
 
               return (
                 <button
@@ -407,11 +405,11 @@ const TestPortal = () => {
           <div className="grid grid-cols-2 gap-12 max-w-sm mx-auto border-t border-b border-gray-200 py-12">
             <div>
               <div className="text-xs uppercase tracking-[0.2em] text-gray-500 mb-2">Score</div>
-              <div className="font-serif text-5xl font-bold">{testResult.score}%</div>
+              <div className="font-serif text-5xl font-bold">{Math.round((testResult.score / testResult.totalQuestions) * 100)}%</div>
             </div>
             <div>
               <div className="text-xs uppercase tracking-[0.2em] text-gray-500 mb-2">Correct</div>
-              <div className="font-serif text-5xl font-bold">{testResult.correctAnswers}/{testResult.totalQuestions}</div>
+              <div className="font-serif text-5xl font-bold">{testResult.score}/{testResult.totalQuestions}</div>
             </div>
           </div>
         </div>
@@ -493,9 +491,9 @@ const TestPortal = () => {
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="w-full flex-1"
           >
-            {mode === "start" && <StartView />}
-            {mode === "test" && <TestRunnerView />}
-            {mode === "result" && <ResultView />}
+            {mode === "start" && StartView()}
+            {mode === "test" && TestRunnerView()}
+            {mode === "result" && ResultView()}
           </motion.div>
         </AnimatePresence>
       </div>
