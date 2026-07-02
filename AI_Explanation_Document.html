@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Understanding AI – Generative AI & SkillSwap Matching AI</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+
+    :root {
+      --primary: #6C63FF;
+      --secondary: #FF6584;
+      --accent: #43E97B;
+      --dark: #0F0F1A;
+      --card-bg: #1A1A2E;
+      --card-border: rgba(108, 99, 255, 0.25);
+      --text: #E0E0F0;
+      --muted: #9090B0;
+      --success: #43E97B;
+      --warning: #FFD166;
+      --info: #60EFFF;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 16px;
+    }
+
+    /* ──────────────────────── COVER PAGE ──────────────────────── */
+    .cover {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0F0F1A 0%, #1A0530 50%, #0A1628 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cover::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%);
+      top: -100px; left: -100px;
+    }
+
+    .cover::after {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,101,132,0.1) 0%, transparent 70%);
+      bottom: -80px; right: -80px;
+    }
+
+    .cover-badge {
+      background: linear-gradient(135deg, rgba(108,99,255,0.3), rgba(255,101,132,0.2));
+      border: 1px solid var(--card-border);
+      border-radius: 50px;
+      padding: 8px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #A89EFF;
+      margin-bottom: 32px;
+    }
+
+    .cover h1 {
+      font-size: clamp(36px, 6vw, 72px);
+      font-weight: 800;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #fff 0%, #A89EFF 50%, #60EFFF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 24px;
+    }
+
+    .cover-subtitle {
+      font-size: 20px;
+      color: var(--muted);
+      max-width: 600px;
+      margin-bottom: 48px;
+    }
+
+    .cover-pills {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 60px;
+    }
+
+    .pill {
+      background: rgba(108,99,255,0.15);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #C8C2FF;
+    }
+
+    .cover-meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* ──────────────────────── TABLE OF CONTENTS ──────────────────────── */
+    .toc-page {
+      background: var(--card-bg);
+      padding: 80px 60px;
+      page-break-before: always;
+    }
+
+    .toc-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #A89EFF;
+      margin-bottom: 40px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .toc-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px dashed rgba(108,99,255,0.15);
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .toc-item:last-child { border-bottom: none; }
+
+    .toc-num {
+      background: linear-gradient(135deg, var(--primary), #9B8FFF);
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; margin-right: 16px;
+      flex-shrink: 0;
+    }
+
+    .toc-label { flex: 1; }
+
+    /* ──────────────────────── SECTIONS ──────────────────────── */
+    .section {
+      padding: 80px 60px;
+      max-width: 960px;
+      margin: 0 auto;
+      page-break-before: always;
+    }
+
+    .section-number {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, #A89EFF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    h3 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #C8C2FF;
+      margin: 40px 0 16px;
+    }
+
+    h4 {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--info);
+      margin: 28px 0 10px;
+    }
+
+    p {
+      color: var(--text);
+      margin-bottom: 18px;
+      font-size: 16px;
+    }
+
+    .section-intro {
+      font-size: 18px;
+      color: var(--muted);
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    /* ──────────────────────── CARDS ──────────────────────── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .icon-card {
+      background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(255,101,132,0.05));
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .icon-card .icon {
+      font-size: 40px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .icon-card h4 {
+      color: #fff;
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .icon-card p {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    /* ──────────────────────── EXAMPLE BOXES ──────────────────────── */
+    .example-box {
+      background: linear-gradient(135deg, rgba(67,233,123,0.06), rgba(67,233,123,0.02));
+      border: 1px solid rgba(67,233,123,0.25);
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+
+    .example-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .example-box p {
+      margin: 0;
+      font-size: 15px;
+      color: #d0f0e0;
+    }
+
+    .note-box {
+      background: linear-gradient(135deg, rgba(96,239,255,0.06), rgba(96,239,255,0.02));
+      border: 1px solid rgba(96,239,255,0.25);
+      border-left: 4px solid var(--info);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+
+    .note-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--info);
+      margin-bottom: 10px;
+    }
+
+    .note-box p {
+      margin: 0;
+      font-size: 15px;
+      color: #d0f4ff;
+    }
+
+    .warn-box {
+      background: rgba(255,209,102,0.06);
+      border: 1px solid rgba(255,209,102,0.25);
+      border-left: 4px solid var(--warning);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+
+    .warn-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--warning);
+      margin-bottom: 10px;
+    }
+
+    /* ──────────────────────── CODE BLOCKS ──────────────────────── */
+    .code-block {
+      background: #0A0A15;
+      border: 1px solid rgba(108,99,255,0.2);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 20px 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 14px;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+
+    .code-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .kw { color: #C792EA; }
+    .fn { color: #82AAFF; }
+    .str { color: #C3E88D; }
+    .num { color: #F78C6C; }
+    .cm { color: #546E7A; font-style: italic; }
+    .var { color: #EEFFFF; }
+    .op { color: #89DDFF; }
+
+    /* ──────────────────────── SCORE TABLE ──────────────────────── */
+    .score-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .score-table th {
+      background: linear-gradient(135deg, rgba(108,99,255,0.3), rgba(108,99,255,0.15));
+      color: #C8C2FF;
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .score-table td {
+      padding: 14px 20px;
+      font-size: 15px;
+      border-bottom: 1px solid rgba(108,99,255,0.1);
+    }
+
+    .score-table tr:nth-child(even) td {
+      background: rgba(108,99,255,0.04);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-required {
+      background: rgba(255,101,132,0.2);
+      color: #FF6584;
+      border: 1px solid rgba(255,101,132,0.3);
+    }
+
+    .badge-optional {
+      background: rgba(67,233,123,0.15);
+      color: #43E97B;
+      border: 1px solid rgba(67,233,123,0.3);
+    }
+
+    /* ──────────────────────── FLOW DIAGRAM ──────────────────────── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 32px 0;
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .flow-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .flow-circle {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #9B8FFF);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .flow-line {
+      width: 2px;
+      flex: 1;
+      min-height: 40px;
+      background: linear-gradient(to bottom, var(--primary), transparent);
+      margin: 4px 0;
+    }
+
+    .flow-content {
+      padding-bottom: 32px;
+      flex: 1;
+    }
+
+    .flow-content h4 { margin-top: 10px; color: #fff; }
+
+    /* ──────────────────────── COMPARISON ──────────────────────── */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 32px 0;
+    }
+
+    .compare-col {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .compare-col.left-col { border-top: 3px solid var(--primary); }
+    .compare-col.right-col { border-top: 3px solid var(--secondary); }
+
+    .compare-col h4 {
+      font-size: 16px;
+      margin: 0 0 16px;
+    }
+
+    .compare-col ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .compare-col ul li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .compare-col ul li::before { margin-right: 8px; }
+    .left-col ul li::before { content: '🟣'; }
+    .right-col ul li::before { content: '🟠'; }
+
+    /* ──────────────────────── HIGHLIGHT BOX ──────────────────────── */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(255,101,132,0.08));
+      border: 1px solid rgba(108,99,255,0.35);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 32px 0;
+      text-align: center;
+    }
+
+    .highlight-box .big-text {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .highlight-box p {
+      color: var(--muted);
+      font-size: 15px;
+      margin: 0;
+    }
+
+    /* ──────────────────────── PROGRESS BAR ──────────────────────── */
+    .score-bar-wrap {
+      margin: 8px 0;
+    }
+
+    .score-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: var(--muted);
+    }
+
+    .score-bar {
+      height: 10px;
+      border-radius: 6px;
+      background: rgba(108,99,255,0.15);
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--primary), var(--info));
+    }
+
+    /* ──────────────────────── DIVIDER ──────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--card-border);
+      margin: 48px 0;
+    }
+
+    /* ──────────────────────── PAGE SEPARATOR ──────────────────────── */
+    .page-sep {
+      background: linear-gradient(135deg, #0F0F1A, #1A0530);
+      padding: 48px 60px;
+      border-top: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    /* ──────────────────────── PRINT ──────────────────────── */
+    @media print {
+      body { background: #fff; color: #111; }
+      .cover { min-height: auto; page-break-after: always; }
+      .section { page-break-before: always; }
+      .code-block { background: #f4f4f8; color: #111; }
+    }
+
+    /* ──────────────────────── FORMULA ──────────────────────── */
+    .formula {
+      background: #0A0A15;
+      border: 1px solid rgba(108,99,255,0.25);
+      border-radius: 12px;
+      padding: 20px 28px;
+      margin: 20px 0;
+      font-family: 'Fira Code', monospace;
+      font-size: 14px;
+      color: #C8C2FF;
+      line-height: 2;
+      text-align: center;
+    }
+
+    ul.styled {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul.styled li {
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 15px;
+      color: var(--muted);
+      padding-left: 24px;
+      position: relative;
+    }
+
+    ul.styled li::before {
+      content: '→';
+      color: var(--primary);
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+    }
+
+    .tag { 
+      display: inline-block;
+      background: rgba(108,99,255,0.2);
+      border: 1px solid rgba(108,99,255,0.3);
+      color: #A89EFF;
+      border-radius: 6px;
+      padding: 2px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 2px;
+    }
+
+    .tag.green { background: rgba(67,233,123,0.15); border-color: rgba(67,233,123,0.3); color: #43E97B; }
+    .tag.red { background: rgba(255,101,132,0.15); border-color: rgba(255,101,132,0.3); color: #FF6584; }
+    .tag.blue { background: rgba(96,239,255,0.15); border-color: rgba(96,239,255,0.3); color: #60EFFF; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     COVER PAGE
+═══════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-badge">Technical Documentation</div>
+  <h1>Understanding AI in Simple Language</h1>
+  <p class="cover-subtitle">
+    A clear, beginner-friendly guide to <strong>Generative AI</strong> and our own
+    <strong>SkillSwap Matching AI</strong> — with real examples, step-by-step flows, and detailed explanations.
+  </p>
+  <div class="cover-pills">
+    <div class="pill">🤖 Generative AI — What It Is &amp; How It Works</div>
+    <div class="pill">🧪 Groq AI (Llama 3.3) — Test Question Generation</div>
+    <div class="pill">🔗 SkillSwap Matching Algorithm</div>
+    <div class="pill">📊 Score Formulas Explained</div>
+    <div class="pill">💡 Real-World Examples</div>
+  </div>
+  <div class="cover-meta">SkillSwap Platform &nbsp;|&nbsp; AI Documentation &nbsp;|&nbsp; 2026</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     TABLE OF CONTENTS
+═══════════════════════════════════════════════ -->
+<div class="toc-page">
+  <div class="toc-title">📋 Table of Contents</div>
+
+  <div class="toc-item"><span class="toc-num">1</span><span class="toc-label">What is AI? — The Very Basics</span></div>
+  <div class="toc-item"><span class="toc-num">2</span><span class="toc-label">Generative AI — How It Works (with ChatGPT / Gemini examples)</span></div>
+  <div class="toc-item"><span class="toc-num">3</span><span class="toc-label">How SkillSwap Uses Generative AI — Test Question Generation (Groq / Llama 3.3)</span></div>
+  <div class="toc-item"><span class="toc-num">4</span><span class="toc-label">How AI Learns — Training, Patterns, and Prediction</span></div>
+  <div class="toc-item"><span class="toc-num">5</span><span class="toc-label">Our SkillSwap Matching AI — What It Does</span></div>
+  <div class="toc-item"><span class="toc-num">6</span><span class="toc-label">The 8 Matching Factors — Each One Explained</span></div>
+  <div class="toc-item"><span class="toc-num">7</span><span class="toc-label">The Final Match Score Formula — With Full Example</span></div>
+  <div class="toc-item"><span class="toc-num">8</span><span class="toc-label">PERFECT SWAP vs PARTIAL MATCH — What's the Difference?</span></div>
+  <div class="toc-item"><span class="toc-num">9</span><span class="toc-label">Teacher Recommendation AI — Simple Recommender</span></div>
+  <div class="toc-item"><span class="toc-num">10</span><span class="toc-label">Swap Queue — When No Match Is Found</span></div>
+  <div class="toc-item"><span class="toc-num">11</span><span class="toc-label">Generative AI (Test Gen) vs Our SkillSwap Matching AI — Key Differences</span></div>
+  <div class="toc-item"><span class="toc-num">12</span><span class="toc-label">Summary &amp; Key Takeaways</span></div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 1 — WHAT IS AI
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 01</div>
+  <h2>What is AI?</h2>
+  <p class="section-intro">
+    AI stands for <strong>Artificial Intelligence</strong>. In simple words, it means making a computer smart enough to
+    think, learn, and make decisions — kind of like a human brain, but using math and patterns.
+  </p>
+
+  <h3>🧠 Think of it like this</h3>
+  <p>
+    When you were a child, you learned to recognize a dog by seeing many dogs. Your brain said,
+    <em>"Oh! Four legs, fur, barks → this is a dog."</em> AI does the same thing — but instead of
+    eyes and ears, it uses <strong>huge amounts of data and mathematical patterns</strong>.
+  </p>
+
+  <div class="example-box">
+    <div class="example-label">🌟 Real-life Example</div>
+    <p>
+      You show a child 1,000 pictures of cats and 1,000 pictures of dogs. After that, they can identify both!
+      AI learns the same way — just much faster, using millions of examples.
+    </p>
+  </div>
+
+  <div class="card-grid" style="margin-top:32px">
+    <div class="icon-card">
+      <span class="icon">🎯</span>
+      <h4>Pattern Recognition</h4>
+      <p>AI finds patterns in data — like "users who like X also like Y"</p>
+    </div>
+    <div class="icon-card">
+      <span class="icon">📚</span>
+      <h4>Learning from Data</h4>
+      <p>The more data it sees, the smarter it gets — just like practice makes perfect</p>
+    </div>
+    <div class="icon-card">
+      <span class="icon">🔮</span>
+      <h4>Making Predictions</h4>
+      <p>AI uses what it learned to make smart guesses about new situations</p>
+    </div>
+  </div>
+
+  <h3>📦 Two Broad Types of AI</h3>
+  <div class="compare-grid">
+    <div class="compare-col left-col">
+      <h4 style="color:#A89EFF">🤖 Generative AI</h4>
+      <ul>
+        <li>Creates new content (text, images, music)</li>
+        <li>Examples: ChatGPT, Gemini, DALL·E, Copilot</li>
+        <li>Generates answers it has never seen before</li>
+        <li>Used for chatbots, writing, coding help</li>
+      </ul>
+    </div>
+    <div class="compare-col right-col">
+      <h4 style="color:#FF9898">🔍 Analytical / Matching AI</h4>
+      <ul>
+        <li>Analyzes & scores existing data</li>
+        <li>Examples: Recommendation engines, Skill Matchers</li>
+        <li>Ranks and filters based on rules & weights</li>
+        <li>Used for Netflix recommendations, SkillSwap matching</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 2 — GENERATIVE AI
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 02</div>
+  <h2>Generative AI — How It Works</h2>
+  <p class="section-intro">
+    Generative AI is the technology behind tools like <strong>ChatGPT, Gemini, Llama, and Groq</strong>.
+    The word "generative" means it <em>generates (creates) something new</em> — like answering a question,
+    writing a story, producing code, or generating quiz questions — even if it has never seen that exact
+    request before. In SkillSwap, we use Generative AI <strong>specifically to generate skill-test questions</strong>.
+  </p>
+
+  <h3>🧩 The Core Idea — Next Word Prediction</h3>
+  <p>
+    At its heart, a language-based Generative AI (like ChatGPT or the Llama model we use) is a very powerful
+    <strong>"next word predictor"</strong>. It reads your prompt and predicts the most likely next word,
+    then the next, then the next… forming a complete, meaningful response.
+  </p>
+
+  <div class="example-box">
+    <div class="example-label">💡 Step-by-step Example</div>
+    <p>
+      <strong>You type:</strong> "The sky is…"<br/><br/>
+      AI thinks: What word most likely comes after "The sky is"?<br/>
+      → It has seen millions of sentences. Most times, it was "blue" or "clear" or "dark".<br/>
+      → It picks <strong>"blue"</strong> with high confidence.<br/><br/>
+      Next: "The sky is blue and the…" → AI now predicts "sun" or "clouds".<br/>
+      This keeps going until it forms a complete, meaningful response — like a full quiz question!
+    </p>
+  </div>
+
+  <h3>🏗️ How Was It Built? — Training Phase</h3>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">1</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>📥 Collect Massive Data</h4>
+        <p>Billions of pages from the internet, books, Wikipedia, code repositories, and more. Meta's Llama 3.3 (which we use via Groq) was trained on trillions of tokens of text!</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">2</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>🔢 Convert Text to Numbers</h4>
+        <p>AI can't read words — it reads numbers. So words are turned into numerical tokens. "Python" becomes something like <code>[14380]</code>.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">3</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>🧮 Train a Neural Network</h4>
+        <p>A massive mathematical structure (with billions of "neurons") learns the relationship between words and context. It adjusts itself millions of times to reduce errors — this is called "gradient descent".</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">4</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>👍 Fine-tuning with Human Feedback (RLHF)</h4>
+        <p>Human trainers rate the AI's responses as good or bad. The model is then rewarded for good responses and penalized for bad ones — making it more helpful and accurate.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">5</div>
+      </div>
+      <div class="flow-content">
+        <h4>🚀 Deploy via API — We Use It Here!</h4>
+        <p>The trained model is made available via an API. SkillSwap calls the <strong>Groq API</strong> which runs Llama 3.3, and uses it to instantly generate hard-level quiz questions for any skill.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <div class="note-label">🔍 Key Technology — Transformer Architecture</div>
+    <p>
+      The reason modern Generative AI is so good at understanding context is a breakthrough called the
+      <strong>"Transformer"</strong> (introduced by Google in 2017). It lets AI look at all words
+      in a sentence simultaneously and understand how they relate — not just one word at a time.
+      Llama (which Groq runs) is built on this exact technology.
+    </p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 3 — HOW SKILLSWAP USES GEN AI
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 03</div>
+  <h2>How SkillSwap Uses Generative AI</h2>
+  <p class="section-intro">
+    In SkillSwap, Generative AI has <strong>one specific job</strong> — automatically generating hard-level
+    multiple-choice questions for skill tests. We use <strong>Groq AI</strong> which runs
+    <strong>Meta's Llama 3.3 (70B parameter model)</strong> to do this in seconds.
+  </p>
+
+  <div class="highlight-box">
+    <div class="big-text">🧪 Gen AI Role in SkillSwap</div>
+    <p>
+      Groq AI (Llama 3.3) is called to generate <strong>15 hard-level MCQ questions</strong> for any skill on demand.<br/>
+      These questions are then used to <strong>test and qualify</strong> users who want to teach that skill.
+    </p>
+  </div>
+
+  <h3>🔄 How the Test Generation Flow Works</h3>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">1</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>📝 User Requests a Test</h4>
+        <p>A user says: "I want to teach <strong>Python</strong>. Generate a test for me." The system calls our AI question generator with the skill name and count = 15.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">2</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>📤 We Send a Prompt to Groq API</h4>
+        <p>Our backend sends a carefully crafted prompt to the Groq API (which runs Llama 3.3 70B). The prompt says exactly: <em>"Generate 15 hard-level MCQs for the skill 'Python'. Return only a JSON array."</em></p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">3</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>🤖 Llama 3.3 Generates Questions</h4>
+        <p>The AI uses its training (trillions of text tokens including programming docs, tutorials, and books) to generate creative, hard, unique questions about Python every time — never repeating the same set.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">4</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>📥 We Parse the JSON Response</h4>
+        <p>Groq sends back a JSON array. Our backend parses each question — extracting the question text, 4 options (A, B, C, D), and the correct answer. If the AI wraps it in markdown code blocks, we clean that up automatically.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">5</div>
+      </div>
+      <div class="flow-content">
+        <h4>🎯 User Takes the Test → Score is Recorded</h4>
+        <p>The 15 questions are shown to the user. They answer them. If they score <strong>10/15 or more (67%+)</strong>, they pass and are qualified to teach that skill on SkillSwap.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>🔍 The Actual Prompt We Send to Groq AI</h3>
+  <div class="code-block">
+    <div class="code-label">Java — Prompt sent to Llama 3.3 via Groq API</div>
+    <span class="str">"Generate exactly 15 hard-level multiple-choice questions for the skill 'Python'."</span><br/>
+    <span class="str">"Return the output strictly in the following JSON format:"</span><br/>
+    <span class="str">"[{\"questionNumber\": 1, \"question\": \"text\","</span><br/>
+    <span class="str">"\"options\": [\"A\", \"B\", \"C\", \"D\"], \"correctAnswer\": \"A\"}]"</span><br/>
+    <span class="str">"Do not include any introductory text or explanation. Only the JSON array."</span>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">🌟 Real Example — Gen AI Generating a Python Question</div>
+    <p>
+      <strong>Our prompt to Groq:</strong> "Generate 15 hard Python MCQs in JSON…"<br/><br/>
+      <strong>Llama 3.3 generates:</strong><br/>
+      <em>Question 1: What is the output of <code>print(type(lambda: None))</code>?</em><br/>
+      Options: A) &lt;class 'function'&gt; &nbsp; B) &lt;class 'NoneType'&gt; &nbsp; C) &lt;class 'lambda'&gt; &nbsp; D) Error<br/>
+      Correct Answer: <strong>A</strong><br/><br/>
+      The AI never stored this question — it <em>generated</em> it fresh by understanding Python deeply!
+    </p>
+  </div>
+
+  <h3>⚙️ Technical Details — Groq + Llama 3.3</h3>
+  <div class="card-grid">
+    <div class="icon-card">
+      <span class="icon">🤖</span>
+      <h4>Model: Llama 3.3 70B</h4>
+      <p>70 Billion parameter model built by Meta AI. Extremely powerful for language and reasoning tasks.</p>
+    </div>
+    <div class="icon-card">
+      <span class="icon">⚡</span>
+      <h4>Provider: Groq API</h4>
+      <p>Groq runs Llama at blazing fast speeds using custom LPU chips. Questions are generated in under 2 seconds!</p>
+    </div>
+    <div class="icon-card">
+      <span class="icon">🌡️</span>
+      <h4>Temperature: 0.7</h4>
+      <p>Controls creativity. 0.7 gives a good balance — questions are creative and varied but still factually correct.</p>
+    </div>
+    <div class="icon-card">
+      <span class="icon">📋</span>
+      <h4>Output: Strict JSON</h4>
+      <p>We enforce a strict JSON format so our backend can reliably parse every question, option, and answer automatically.</p>
+    </div>
+  </div>
+
+  <h3>⚠️ Limitations of Generative AI (Why We Use It Carefully)</h3>
+  <ul class="styled">
+    <li>Can occasionally "hallucinate" — generate a wrong correct answer, so the format must be strictly enforced</li>
+    <li>We only use it for question generation, not for scoring or matching — those use our own deterministic code</li>
+    <li>Output quality depends on how clearly we write the prompt (that's why ours is very specific)</li>
+    <li>We clean up any markdown formatting the AI adds before parsing the JSON response</li>
+  </ul>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 4 — HOW AI LEARNS
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 04</div>
+  <h2>How AI Learns — Training, Patterns & Prediction</h2>
+  <p class="section-intro">
+    Whether it's Generative AI or our SkillSwap matching system, all AI works by learning patterns. Let's break this down in the simplest way possible.
+  </p>
+
+  <h3>📐 The Core Loop of Learning</h3>
+  <div class="card">
+    <p style="font-size:17px; text-align:center; color:#C8C2FF; margin:0">
+      <strong>Input</strong> → <strong>Prediction</strong> → <strong>Compare with Reality</strong> → <strong>Adjust</strong> → <strong>Repeat</strong>
+    </p>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">💡 Simple Analogy — Learning to Throw a Ball</div>
+    <p>
+      Imagine you're learning to throw a ball into a basket.<br/><br/>
+      1. <strong>You throw</strong> (prediction) → ball misses (error)<br/>
+      2. <strong>You adjust</strong> your angle (update)<br/>
+      3. You throw again → ball gets closer<br/>
+      4. After many tries → you hit the basket consistently!<br/><br/>
+      AI does this millions of times per second with mathematical adjustments called <strong>gradient descent</strong>.
+    </p>
+  </div>
+
+  <h3>🔑 Key Terms Explained Simply</h3>
+
+  <table class="score-table">
+    <tr>
+      <th>Term</th>
+      <th>Simple Meaning</th>
+      <th>Analogy</th>
+    </tr>
+    <tr>
+      <td><strong>Training</strong></td>
+      <td>AI learning from examples</td>
+      <td>Student reading textbooks</td>
+    </tr>
+    <tr>
+      <td><strong>Model</strong></td>
+      <td>The trained AI brain (a file of learned patterns)</td>
+      <td>A student who has already studied</td>
+    </tr>
+    <tr>
+      <td><strong>Parameters</strong></td>
+      <td>Numbers inside the AI that store its "knowledge"</td>
+      <td>The student's memories and notes</td>
+    </tr>
+    <tr>
+      <td><strong>Inference</strong></td>
+      <td>Using the trained model to answer new questions</td>
+      <td>The student taking an exam</td>
+    </tr>
+    <tr>
+      <td><strong>Prompt</strong></td>
+      <td>The question or instruction you give to AI</td>
+      <td>The exam question</td>
+    </tr>
+    <tr>
+      <td><strong>Token</strong></td>
+      <td>A word or part of a word (how AI reads text)</td>
+      <td>A unit of vocabulary</td>
+    </tr>
+    <tr>
+      <td><strong>Weight / Score</strong></td>
+      <td>How much importance is given to a factor</td>
+      <td>Exam marks — some subjects worth more</td>
+    </tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 5 — SKILLSWAP MATCHING AI
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 05</div>
+  <h2>Our SkillSwap Matching AI</h2>
+  <p class="section-intro">
+    Unlike Generative AI (which creates text), our SkillSwap AI is a <strong>matching / recommendation system</strong>.
+    Its job is simple: find the best learning partner for you from all registered users — someone who can teach you
+    what you want to learn, and wants to learn what you can teach.
+  </p>
+
+  <div class="highlight-box">
+    <div class="big-text">🔗 The Core Idea</div>
+    <p>
+      You know Python → You want to learn React<br/>
+      Someone else knows React → They want to learn Python<br/>
+      <strong>= Perfect Skill Swap! 🎉</strong>
+    </p>
+  </div>
+
+  <h3>📌 What the System Does — Step by Step</h3>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">1</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>User Submits a Request</h4>
+        <p>You say: "I want to learn <span class="tag blue">React</span> and I can teach <span class="tag green">Python</span>"</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">2</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>Validate Your Teaching Ability</h4>
+        <p>Can you really teach Python? The system checks:</p>
+        <ul class="styled" style="margin-top:8px">
+          <li>Python is listed in your skills profile</li>
+          <li>You marked Python with "willing to teach" = YES</li>
+          <li>You scored <strong>≥ 10/15 on the Python test</strong> (this is required!)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">3</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>Scan All Other Users</h4>
+        <p>The system looks at every other user in the database and asks: "Can they teach React? Do they want to learn Python?"</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">4</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>Calculate Match Score for Each</h4>
+        <p>For every eligible candidate, the system calculates a <strong>match score (0 to 1)</strong> based on 8 factors. Higher = better match.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">5</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>Sort & Return Best Matches</h4>
+        <p>All candidates are sorted from highest score to lowest. You see the best matches first. Emails are also sent to notify both parties!</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">6</div>
+      </div>
+      <div class="flow-content">
+        <h4>No Match? → Join the Queue</h4>
+        <p>If no one matches right now, you're added to a <strong>Swap Queue</strong>. When a new user joins who matches you, you'll be notified automatically.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 6 — THE 8 MATCHING FACTORS
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 06</div>
+  <h2>The 8 Matching Factors — Every One Explained</h2>
+  <p class="section-intro">
+    The match score is calculated using <strong>8 individual factors</strong>, each contributing a different
+    percentage to the total score. Here's each one explained with examples.
+  </p>
+
+  <div class="note-box">
+    <div class="note-label">💡 How Scoring Works</div>
+    <p>Each factor is scored from <strong>0.0 to 1.0</strong> (0% to 100%). That score is multiplied by its "weight" (importance). All weighted scores are added up for the final match score.</p>
+  </div>
+
+  <h3>Group A: Self-Reported Factors (50% total weight)</h3>
+  <p>These are based on what users tell us about themselves in their profile.</p>
+
+  <!-- Factor 1 -->
+  <div class="card">
+    <h4>📊 Factor 1: Skill Level Gap Score — Weight: 20%</h4>
+    <p>
+      This checks if the teacher's skill level is appropriate for the learner.
+      The system uses 4 levels: <span class="tag">Beginner (1)</span>
+      <span class="tag">Intermediate (2)</span>
+      <span class="tag">Advanced (3)</span>
+      <span class="tag">Expert (4)</span>
+    </p>
+
+    <table class="score-table">
+      <tr><th>Situation</th><th>Score</th><th>Reason</th></tr>
+      <tr><td>Teacher is same level or higher than learner</td><td style="color:#43E97B">1.0 (100%)</td><td>Perfect match — they can teach effectively</td></tr>
+      <tr><td>Teacher is lower level than learner</td><td style="color:#FF6584">0.4 (40%)</td><td>Poor fit — learner knows more than teacher</td></tr>
+    </table>
+
+    <div class="example-box" style="margin-top:16px">
+      <div class="example-label">Example</div>
+      <p>
+        You are a <strong>Beginner in React</strong>. The candidate is an <strong>Expert in React</strong>.<br/>
+        Expert (4) − Beginner (1) = gap of 3 → <strong>Score = 1.0 ✅</strong>
+      </p>
+    </div>
+  </div>
+
+  <!-- Factor 2 -->
+  <div class="card">
+    <h4>🎯 Factor 2: Goal Alignment Score — Weight: 10%</h4>
+    <p>
+      This matches <em>why you want to learn</em> with <em>why they want to teach</em>.
+      If your goals align, the session will be much more productive!
+    </p>
+
+    <table class="score-table">
+      <tr><th>Your Goal</th><th>Their Motivation</th><th>Score</th></tr>
+      <tr><td>Job Preparation</td><td>Love Teaching</td><td style="color:#43E97B">1.0 (100%)</td></tr>
+      <tr><td>Career Switch</td><td>Love Teaching</td><td style="color:#43E97B">1.0 (100%)</td></tr>
+      <tr><td>Personal Project</td><td>Reinforce Knowledge</td><td style="color:#FFD166">0.9 (90%)</td></tr>
+      <tr><td>Exploration</td><td>Networking</td><td style="color:#FFD166">0.8 (80%)</td></tr>
+      <tr><td>Job Preparation</td><td>Build Reputation</td><td style="color:#60EFFF">0.7 (70%)</td></tr>
+      <tr><td>Any other</td><td>Any other</td><td style="color:#9090B0">0.6 (60%)</td></tr>
+    </table>
+
+    <div class="example-box" style="margin-top:16px">
+      <div class="example-label">Example</div>
+      <p>
+        You want to prepare for a job interview in React. The partner teaches because they <strong>love teaching</strong>.<br/>
+        "JOB_PREP" + "LOVE_TEACHING" → <strong>Score = 1.0 ✅</strong>
+      </p>
+    </div>
+  </div>
+
+  <!-- Factor 3 -->
+  <div class="card">
+    <h4>📅 Factor 3: Availability Score — Weight: 10%</h4>
+    <p>
+      This compares your weekly schedule with the partner's schedule to find
+      <strong>overlapping free time slots</strong>. More overlap = higher score.
+    </p>
+    <p>
+      Each user sets their availability as a JSON schedule like:
+    </p>
+    <div class="code-block">
+      <div class="code-label">Availability JSON Example</div>
+      <span class="cm">// User 1 (You)</span><br/>
+      { <span class="str">"Monday"</span>: [<span class="str">"Morning"</span>, <span class="str">"Evening"</span>], <span class="str">"Wednesday"</span>: [<span class="str">"Afternoon"</span>] }<br/><br/>
+      <span class="cm">// User 2 (Partner)</span><br/>
+      { <span class="str">"Monday"</span>: [<span class="str">"Evening"</span>], <span class="str">"Friday"</span>: [<span class="str">"Morning"</span>] }<br/><br/>
+      <span class="cm">// Overlap: Monday Evening → 1 slot × 3 hrs = 3 hours overlap</span>
+    </div>
+
+    <div class="example-box">
+      <div class="example-label">Example</div>
+      <p>
+        You're free Monday Morning + Evening (6 hrs) and Wednesday Afternoon (3 hrs) = 9 hrs total.<br/>
+        Partner matches Monday Evening only = 3 hrs overlap.<br/>
+        Score = 3 / (9/2) = 3/4.5 ≈ <strong>0.67 (67%)</strong>
+      </p>
+    </div>
+  </div>
+
+  <!-- Factor 4 -->
+  <div class="card">
+    <h4>⏰ Factor 4: Time Commitment Score — Weight: 5%</h4>
+    <p>
+      This checks if both users want to invest a similar number of hours per week.
+      If one person wants 2 hrs/week and the other wants 10 hrs/week, they won't work well together.
+    </p>
+
+    <table class="score-table">
+      <tr><th>Difference</th><th>Score</th><th>Meaning</th></tr>
+      <tr><td>0 hours difference</td><td style="color:#43E97B">1.0</td><td>Perfect time match</td></tr>
+      <tr><td>Within 20% difference</td><td style="color:#FFD166">0.8</td><td>Good match</td></tr>
+      <tr><td>Within 50% difference</td><td style="color:#60EFFF">0.5</td><td>Moderate match</td></tr>
+      <tr><td>More than 50% difference</td><td style="color:#FF6584">0.3</td><td>Poor match</td></tr>
+    </table>
+
+    <div class="example-box">
+      <div class="example-label">Example</div>
+      <p>You want 5 hrs/week. Partner wants 6 hrs/week. Difference = 1. Max = 6. 1/6 ≈ 17% → Within 20% → <strong>Score = 0.8 ✅</strong></p>
+    </div>
+  </div>
+
+  <!-- Factor 5 -->
+  <div class="card">
+    <h4>🎓 Factor 5: Learning Style Score — Weight: 5%</h4>
+    <p>
+      This matches <em>how you prefer to learn</em> with <em>how they prefer to teach</em>.
+      Compatibility here means sessions will be more effective and enjoyable.
+    </p>
+
+    <table class="score-table">
+      <tr><th>Your Learning Style</th><th>Their Teaching Style</th><th>Score</th></tr>
+      <tr><td>Pair Programming</td><td>Project-Based</td><td style="color:#43E97B">1.0</td></tr>
+      <tr><td>Video Call</td><td>Step-by-Step</td><td style="color:#FFD166">0.9</td></tr>
+      <tr><td>Screen Share</td><td>Problem Solving</td><td style="color:#FFD166">0.9</td></tr>
+      <tr><td>Any other combo</td><td>—</td><td style="color:#9090B0">0.6</td></tr>
+    </table>
+
+    <div class="example-box">
+      <div class="example-label">Example</div>
+      <p>You love Pair Programming. They teach via Project-Based learning → <strong>Score = 1.0 ✅ — Perfect fit!</strong></p>
+    </div>
+  </div>
+
+  <h3>Group B: Verified / Historical Factors (50% total weight)</h3>
+  <p>These are based on real, verifiable data — not just self-reports. This makes the system more trustworthy.</p>
+
+  <!-- Factor 6 -->
+  <div class="card">
+    <h4>🧪 Factor 6: Test Score — Weight: 30% (REQUIRED!)</h4>
+    <p>
+      This is the most important factor. Before anyone can teach a skill on SkillSwap, they must
+      <strong>pass a knowledge test</strong> with a score of at least <strong>10 out of 15 (67%)</strong>.
+    </p>
+    <div class="warn-box">
+      <div class="warn-label">⚠️ Critical Rule</div>
+      <p>If a person has NOT passed the test for a skill, they are <strong>completely blocked</strong> from appearing as a teacher for that skill — regardless of their other scores. The test score carries 30% of the total weight.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">Validation Rule in Code</div>
+      <span class="cm">// Must score >= 10/15 (normalized: 10/15 ≈ 0.667)</span><br/>
+      <span class="kw">if</span> (testScore == <span class="kw">null</span> || testScore &lt; (<span class="num">10.0</span> / <span class="num">15.0</span>)) {<br/>
+      &nbsp;&nbsp;<span class="kw">return</span> <span class="num">false</span>; <span class="cm">// Cannot teach this skill</span><br/>
+      }
+    </div>
+
+    <div class="example-box">
+      <div class="example-label">Example</div>
+      <p>
+        Candidate scored 12/15 on the React test.<br/>
+        Normalized: 12/15 = <strong>0.80</strong><br/>
+        This score × 30% weight = <strong>0.24 contribution to total score</strong>
+      </p>
+    </div>
+  </div>
+
+  <!-- Factor 7 -->
+  <div class="card">
+    <h4>📜 Factor 7: Certification Score — Weight: 10% (Optional)</h4>
+    <p>
+      If the teacher has a certificate (like an AWS cert, Coursera certificate, etc.) for the skill,
+      this adds credibility. It's optional — not having one doesn't block you.
+    </p>
+    <p>
+      Each certification has a <strong>credibility score (0 to 1)</strong> based on the issuing organization.
+      The system picks the best certification score for that skill.
+    </p>
+
+    <div class="example-box">
+      <div class="example-label">Example</div>
+      <p>
+        Partner has a React certification from Meta with credibility score <strong>0.90</strong>.<br/>
+        0.90 × 10% weight = <strong>0.09 contribution to total score</strong><br/>
+        (If no cert: 0.0 × 10% = 0.0 — just means no bonus)
+      </p>
+    </div>
+  </div>
+
+  <!-- Factor 8 -->
+  <div class="card">
+    <h4>⭐ Factor 8: Reputation Score — Weight: 10% (Optional)</h4>
+    <p>
+      This reflects how well other users have rated the person after past sessions.
+      Scores range from <strong>1 to 5 stars</strong>, which are normalized to 0–1.
+    </p>
+
+    <div class="formula">
+      Normalized Reputation = User's Rating (1–5) ÷ 5.0
+    </div>
+
+    <div class="example-box">
+      <div class="example-label">Example</div>
+      <p>
+        Partner has a reputation score of <strong>4.5/5</strong>.<br/>
+        Normalized: 4.5 / 5 = <strong>0.90</strong><br/>
+        0.90 × 10% weight = <strong>0.09 contribution to total score</strong>
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 7 — THE FORMULA
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 07</div>
+  <h2>The Final Match Score Formula</h2>
+  <p class="section-intro">
+    Now let's put it all together. The total match score is calculated by combining all 8 factors with their weights.
+  </p>
+
+  <div class="formula">
+    <strong>Base Match Score</strong> =<br/><br/>
+    (Skill Level Gap Score × <strong>0.20</strong>) +<br/>
+    (Goal Alignment Score × <strong>0.10</strong>) +<br/>
+    (Availability Score × <strong>0.10</strong>) +<br/>
+    (Time Commitment Score × <strong>0.05</strong>) +<br/>
+    (Learning Style Score × <strong>0.05</strong>) +<br/>
+    (Test Score × <strong>0.30</strong>) +<br/>
+    (Certification Score × <strong>0.10</strong>) +<br/>
+    (Reputation Score × <strong>0.10</strong>)<br/><br/>
+    <strong>Total weights = 1.00 (100%)</strong>
+  </div>
+
+  <div class="formula" style="margin-top:16px">
+    <strong>Final Score</strong> = Base Match Score × Swap Type Multiplier<br/><br/>
+    PERFECT_SWAP → × <strong>1.0</strong> (full score)<br/>
+    PARTIAL_MATCH → × <strong>0.6</strong> (40% penalty)
+  </div>
+
+  <h3>🔬 Full Worked Example</h3>
+  <p>Let's say you (<strong>Alice</strong>) want to learn React and teach Python. Here's a candidate (<strong>Bob</strong>):</p>
+
+  <div class="card">
+    <h4 style="margin-top:0">Bob's Profile</h4>
+    <ul class="styled">
+      <li>Knows React at <strong>Expert level</strong>. Alice is Beginner → gap score = 1.0</li>
+      <li>Bob teaches because he <strong>loves teaching</strong>. Alice needs Job Prep → goal score = 1.0</li>
+      <li>Both free on <strong>Monday evenings + Wednesday mornings</strong> → availability score = 0.8</li>
+      <li>Alice: 5 hrs/week, Bob: 6 hrs/week → 20% diff → time commitment score = 0.8</li>
+      <li>Alice prefers Video Call, Bob teaches Step-by-Step → style score = 0.9</li>
+      <li>Bob's React test score: 13/15 = <strong>0.867</strong></li>
+      <li>Bob's React certification: credibility <strong>0.85</strong></li>
+      <li>Bob's reputation: 4/5 = <strong>0.80</strong></li>
+      <li>Bob also wants to learn Python → <strong>PERFECT_SWAP</strong> → multiplier = 1.0</li>
+    </ul>
+  </div>
+
+  <h4>Calculating Bob's Match Score:</h4>
+  <div class="score-bar-wrap">
+    <div class="score-bar-label"><span>Skill Level Gap (20%)</span><span>1.0 × 0.20 = 0.200</span></div>
+    <div class="score-bar"><div class="score-bar-fill" style="width:100%"></div></div>
+  </div>
+  <div class="score-bar-wrap">
+    <div class="score-bar-label"><span>Goal Alignment (10%)</span><span>1.0 × 0.10 = 0.100</span></div>
+    <div class="score-bar"><div class="score-bar-fill" style="width:100%"></div></div>
+  </div>
+  <div class="score-bar-wrap">
+    <div class="score-bar-label"><span>Availability (10%)</span><span>0.8 × 0.10 = 0.080</span></div>
+    <div class="score-bar"><div class="score-bar-fill" style="width:80%"></div></div>
+  </div>
+  <div class="score-bar-wrap">
+    <div class="score-bar-label"><span>Time Commitment (5%)</span><span>0.8 × 0.05 = 0.040</span></div>
+    <div class="score-bar"><div class="score-bar-fill" style="width:80%"></div></div>
+  </div>
+  <div class="score-bar-wrap">
+    <div class="score-bar-label"><span>Learning Style (5%)</span><span>0.9 × 0.05 = 0.045</span></div>
+    <div class="score-bar"><div class="score-bar-fill" style="width:90%"></div></div>
+  </div>
+  <div class="score-bar-wrap">
+    <div class="score-bar-label"><span>Test Score (30%) ★ Most Important</span><span>0.867 × 0.30 = 0.260</span></div>
+    <div class="score-bar"><div class="score-bar-fill" style="width:86.7%"></div></div>
+  </div>
+  <div class="score-bar-wrap">
+    <div class="score-bar-label"><span>Certification (10%)</span><span>0.85 × 0.10 = 0.085</span></div>
+    <div class="score-bar"><div class="score-bar-fill" style="width:85%"></div></div>
+  </div>
+  <div class="score-bar-wrap">
+    <div class="score-bar-label"><span>Reputation (10%)</span><span>0.80 × 0.10 = 0.080</span></div>
+    <div class="score-bar"><div class="score-bar-fill" style="width:80%"></div></div>
+  </div>
+
+  <div class="highlight-box" style="margin-top:32px">
+    <div class="big-text">Base Score = 0.890 → Final Score = 0.890 × 1.0 = <span style="color:#43E97B">89.0%</span></div>
+    <p>Bob is an excellent match for Alice! He'd appear near the top of her results.</p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 8 — PERFECT SWAP vs PARTIAL
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 08</div>
+  <h2>PERFECT SWAP vs PARTIAL MATCH</h2>
+  <p class="section-intro">
+    Our system classifies every match into one of two types. Understanding this helps you know why some matches appear higher than others.
+  </p>
+
+  <div class="compare-grid">
+    <div class="compare-col left-col">
+      <h4 style="color:#43E97B; margin-top:0">🎉 PERFECT_SWAP</h4>
+      <p style="font-size:14px; color:var(--muted)">The ideal scenario — both of you want to learn from each other!</p>
+      <ul>
+        <li>You teach them your skill (e.g., Python)</li>
+        <li>They teach you their skill (e.g., React)</li>
+        <li>Both parties benefit equally</li>
+        <li>Multiplier: × 1.0 (no penalty — full score)</li>
+        <li>These appear FIRST in results</li>
+      </ul>
+      <div class="example-box" style="margin-top:16px">
+        <div class="example-label">Example</div>
+        <p style="font-size:14px">Alice knows Python, wants React. Bob knows React, wants Python. → PERFECT_SWAP ✅</p>
+      </div>
+    </div>
+    <div class="compare-col right-col">
+      <h4 style="color:#FFD166; margin-top:0">🔁 PARTIAL_MATCH</h4>
+      <p style="font-size:14px; color:var(--muted)">One-sided: They can teach you, but aren't interested in your skill.</p>
+      <ul>
+        <li>They can teach you what you want to learn</li>
+        <li>But they DON'T want to learn what you offer</li>
+        <li>Only one person benefits directly</li>
+        <li>Multiplier: × 0.6 (40% score penalty)</li>
+        <li>Shown below Perfect Swaps</li>
+      </ul>
+      <div class="example-box" style="margin-top:16px">
+        <div class="example-label">Example</div>
+        <p style="font-size:14px">Alice knows Python, wants React. Carol knows React, but wants to learn Java (not Python). → PARTIAL_MATCH ⚡</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <div class="note-label">Why the 40% Penalty?</div>
+    <p>
+      If a swap isn't mutual, the session may feel one-sided and the teacher might be less motivated.
+      By scoring partial matches lower, the system naturally recommends mutually beneficial partnerships first,
+      creating a healthier learning community.
+    </p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 9 — TEACHER RECOMMENDATION
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 09</div>
+  <h2>Teacher Recommendation AI</h2>
+  <p class="section-intro">
+    Alongside the full swap matching, we also have a simpler <strong>Teacher Recommender</strong> system.
+    This is used when you just want to find the best teacher for a single skill — without the mutual swap requirement.
+  </p>
+
+  <h3>🎯 How It Works</h3>
+  <p>This system uses a simplified 3-factor formula to rank potential teachers:</p>
+
+  <div class="formula">
+    Teacher Match Score =<br/><br/>
+    (Test Score × <strong>0.40</strong>) +<br/>
+    (Certification Score × <strong>0.30</strong>) +<br/>
+    (Reputation Score × <strong>0.30</strong>)<br/><br/>
+    <strong>Only teachers who have the skill listed in their profile are considered.</strong>
+  </div>
+
+  <div class="card-grid">
+    <div class="icon-card">
+      <span class="icon">🧪</span>
+      <h4>Test Score (40%)</h4>
+      <p>Most weight — proves actual knowledge, not just self-reported. Already normalized to 0–1.</p>
+    </div>
+    <div class="icon-card">
+      <span class="icon">📜</span>
+      <h4>Certification (30%)</h4>
+      <p>External verification of competence — adds credibility from recognized organizations.</p>
+    </div>
+    <div class="icon-card">
+      <span class="icon">⭐</span>
+      <h4>Reputation (30%)</h4>
+      <p>Community trust — how well did past learners rate this teacher? Normalized from 1–5 to 0–1.</p>
+    </div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">🌟 Recommendation Example — Finding a React Teacher</div>
+    <p>
+      <strong>You want:</strong> Learn React<br/><br/>
+      System scans all users who have "React" in their skills profile:<br/><br/>
+      <strong>Teacher A:</strong> Test = 0.90, Cert = 0.85, Rep = 0.80<br/>
+      Score = (0.90×0.4) + (0.85×0.3) + (0.80×0.3) = 0.36 + 0.255 + 0.24 = <strong>0.855 (85.5%)</strong><br/><br/>
+      <strong>Teacher B:</strong> Test = 0.70, Cert = 0.50, Rep = 0.60<br/>
+      Score = (0.70×0.4) + (0.50×0.3) + (0.60×0.3) = 0.28 + 0.15 + 0.18 = <strong>0.610 (61.0%)</strong><br/><br/>
+      → <strong>Teacher A is recommended first</strong> because they are more credible and reputable.
+    </p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 10 — SWAP QUEUE
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 10</div>
+  <h2>Swap Queue — When No Match Is Found</h2>
+  <p class="section-intro">
+    Sometimes, no one in the current user base matches your exact needs. Instead of showing an empty page and making you check repeatedly, the system puts you in a <strong>Swap Queue</strong>.
+  </p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">1</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>No Match Found</h4>
+        <p>After scanning all users, the result list is empty. Instead of failing, the system saves your request.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">2</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>Added to Queue (Status: PENDING)</h4>
+        <p>A database entry is created with your user ID, skill you want to learn, and skill you can teach. Duplicate requests are automatically ignored.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">3</div>
+        <div class="flow-line"></div>
+      </div>
+      <div class="flow-content">
+        <h4>Email Notification Sent</h4>
+        <p>You receive a "Still Searching..." email letting you know you're in the queue. No need to keep checking manually.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left">
+        <div class="flow-circle">4</div>
+      </div>
+      <div class="flow-content">
+        <h4>Future Match → Both Get Notified</h4>
+        <p>When a new user registers and passes the test for your desired skill (and wants your skill), you're automatically matched and both get email notifications.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <div class="note-label">Smart Duplicate Prevention</div>
+    <p>
+      The system checks if you're already in the queue for the same skill combination before adding you.
+      This prevents spamming the queue with duplicate entries if you search multiple times.
+    </p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 11 — COMPARISON
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 11</div>
+  <h2>Generative AI vs SkillSwap Matching AI</h2>
+  <p class="section-intro">
+    These are two completely different types of AI, built for completely different purposes. Here's a side-by-side comparison to make the difference crystal clear.
+  </p>
+
+  <table class="score-table">
+    <tr>
+      <th>Feature</th>
+      <th>Generative AI (ChatGPT etc.)</th>
+      <th>SkillSwap Matching AI</th>
+    </tr>
+    <tr>
+      <td><strong>What it does</strong></td>
+      <td>Creates new content (text, images)</td>
+      <td>Ranks and matches existing user data</td>
+    </tr>
+    <tr>
+      <td><strong>How it was built</strong></td>
+      <td>Trained on billions of internet texts using neural networks</td>
+      <td>Programmed by us using weighted scoring rules</td>
+    </tr>
+    <tr>
+      <td><strong>Type of AI</strong></td>
+      <td>Deep Learning / Large Language Model (LLM)</td>
+      <td>Rule-based + Weighted Scoring Algorithm</td>
+    </tr>
+    <tr>
+      <td><strong>Input</strong></td>
+      <td>Your message / prompt</td>
+      <td>Your skill to learn + skill to teach</td>
+    </tr>
+    <tr>
+      <td><strong>Output</strong></td>
+      <td>Generated text, images, or code</td>
+      <td>A ranked list of matching users</td>
+    </tr>
+    <tr>
+      <td><strong>Learns over time?</strong></td>
+      <td>Yes — models are periodically re-trained</td>
+      <td>Partially — reputation scores update with feedback</td>
+    </tr>
+    <tr>
+      <td><strong>Requires internet?</strong></td>
+      <td>Yes (API calls to OpenAI/Google)</td>
+      <td>No — runs locally on our server</td>
+    </tr>
+    <tr>
+      <td><strong>Can it be wrong?</strong></td>
+      <td>Yes — can "hallucinate" false facts</td>
+      <td>No hallucination — outputs real user data only</td>
+    </tr>
+    <tr>
+      <td><strong>Example use in SkillSwap</strong></td>
+      <td><strong>✅ Actually used!</strong> Groq (Llama 3.3) generates 15 MCQ test questions per skill on demand</td>
+      <td>Used for finding your best swap partner</td>
+    </tr>
+    <tr>
+      <td><strong>Cost to run</strong></td>
+      <td>Very expensive (GPU cloud servers)</td>
+      <td>Very cheap (standard Java Spring Boot server)</td>
+    </tr>
+    <tr>
+      <td><strong>Transparency</strong></td>
+      <td>Black box — hard to explain why it said something</td>
+      <td>Fully transparent — we can show every score breakdown</td>
+    </tr>
+  </table>
+
+  <div class="highlight-box" style="margin-top:32px">
+    <div class="big-text">💡 Key Insight</div>
+    <p>
+      Generative AI is like a super-smart writer who can create anything from scratch.<br/>
+      Our SkillSwap AI is like a very precise matchmaker who evaluates and ranks candidates with clear, explainable criteria.<br/><br/>
+      <strong>Both are "AI" — but they solve very different problems!</strong>
+    </p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 12 — SUMMARY
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-number">Section 12</div>
+  <h2>Summary & Key Takeaways</h2>
+  <p class="section-intro">
+    Here's everything you need to remember — in simple bullet points!
+  </p>
+
+  <h3>🤖 About Generative AI — and How SkillSwap Uses It</h3>
+  <ul class="styled">
+    <li>Generative AI creates new content by predicting what comes next, based on patterns learned from massive datasets</li>
+    <li>ChatGPT, Gemini, Llama are all LLMs (Large Language Models) — trained on trillions of text tokens</li>
+    <li>They use a Transformer neural network architecture to understand context and generate meaningful output</li>
+    <li>In SkillSwap, we use <strong>Groq AI running Llama 3.3 (70B)</strong> — but <em>only</em> to generate skill-test questions</li>
+    <li>We send a prompt → Llama generates 15 hard MCQs for any skill in under 2 seconds → we parse and serve them</li>
+    <li>The test score from those AI-generated questions feeds directly into the Matching AI as the most important factor (30%)</li>
+  </ul>
+
+  <h3>🔗 About SkillSwap's Matching AI</h3>
+  <ul class="styled">
+    <li>It is a rule-based weighted scoring algorithm — fully transparent and explainable</li>
+    <li>Uses 8 factors: Skill Level Gap (20%), Goal Alignment (10%), Availability (10%), Time (5%), Learning Style (5%), Test Score (30%), Certification (10%), Reputation (10%)</li>
+    <li>Test score is MANDATORY — users cannot teach without passing at least 10/15</li>
+    <li>PERFECT_SWAP (mutual learning) gets 100% score; PARTIAL_MATCH gets 60% (40% penalty)</li>
+    <li>If no match is found, users join a Swap Queue and get notified when a match appears</li>
+    <li>A simpler Teacher Recommender also exists using 3 factors: Test (40%), Cert (30%), Reputation (30%)</li>
+  </ul>
+
+  <h3>⚡ The Big Picture</h3>
+  <div class="card-grid" style="margin-top:8px">
+    <div class="icon-card">
+      <span class="icon">🤝</span>
+      <h4>Fair & Transparent</h4>
+      <p>Every score is calculated with clear rules. No black boxes — you can see exactly why someone matched.</p>
+    </div>
+    <div class="icon-card">
+      <span class="icon">🛡️</span>
+      <h4>Quality-Gated</h4>
+      <p>The mandatory test requirement ensures only qualified users can teach, protecting learners from bad experiences.</p>
+    </div>
+    <div class="icon-card">
+      <span class="icon">📈</span>
+      <h4>Self-Improving</h4>
+      <p>As more users rate sessions, reputation scores improve. Better reputation → higher match score → more students.</p>
+    </div>
+    <div class="icon-card">
+      <span class="icon">♻️</span>
+      <h4>Truly Peer-to-Peer</h4>
+      <p>The PERFECT_SWAP system ensures everyone both teaches and learns — creating a fair knowledge exchange ecosystem.</p>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:60px; padding: 40px; border-top: 1px solid var(--card-border);">
+    <p style="font-size:32px; margin-bottom:8px">🚀</p>
+    <p style="color: var(--muted); font-size:15px">
+      <strong style="color:#C8C2FF">SkillSwap Platform</strong> &nbsp;·&nbsp; Built with Java Spring Boot + React<br/>
+      AI Matching System — Designed &amp; Implemented by the SkillSwap Team
+    </p>
+    <div style="margin-top:24px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+      <span class="tag">Java Spring Boot</span>
+      <span class="tag green">Weighted Scoring AI</span>
+      <span class="tag blue">Peer-to-Peer Learning</span>
+      <span class="tag red">Test-Verified Teaching</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

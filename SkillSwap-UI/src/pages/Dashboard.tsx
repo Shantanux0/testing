@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { sessionApi, Session } from "@/lib/api";
+import { sessionApi, Session, feedbackApi, FeedbackResponse } from "@/lib/api";
 import { toast } from "sonner";
 
 const recommendedSwaps = [
@@ -55,10 +55,22 @@ const Dashboard = () => {
   const [incomingRequests, setIncomingRequests] = useState<Session[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<Session[]>([]);
   const [activeSessions, setActiveSessions] = useState<Session[]>([]);
+  const [feedbacks, setFeedbacks] = useState<FeedbackResponse[]>([]);
+  const [recentSwaps, setRecentSwaps] = useState<Session[]>([]);
 
   useEffect(() => {
     fetchSessions();
+    fetchFeedback();
   }, []);
+
+  const fetchFeedback = async () => {
+    try {
+      const data = await feedbackApi.getMyFeedback();
+      setFeedbacks(data || []);
+    } catch (e) {
+      console.error("Failed to load feedback", e);
+    }
+  };
 
   const fetchSessions = async () => {
     try {
@@ -71,6 +83,18 @@ const Dashboard = () => {
       setIncomingRequests(incoming);
       setOutgoingRequests(outgoing);
       setActiveSessions(accepted);
+
+      // Extract unique recent swaps where session is accepted or completed
+      const swapped = sessions.filter((s: Session) => s.status === 'ACCEPTED' || s.status === 'COMPLETED');
+      const uniqueSwaps: Session[] = [];
+      const seenPartners = new Set<number>();
+      for (const s of swapped) {
+        if (!seenPartners.has(s.partnerId)) {
+          seenPartners.add(s.partnerId);
+          uniqueSwaps.push(s);
+        }
+      }
+      setRecentSwaps(uniqueSwaps);
     } catch (e) {
       console.error(e);
     }
@@ -250,51 +274,60 @@ const Dashboard = () => {
 
           {/* Main Content Grid */}
           <div className="grid lg:grid-cols-3 gap-8 md:gap-12">
-            {/* Recommended Swaps */}
+            {/* Recent Swaps */}
             <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6 md:space-y-8">
               <div className="flex items-center justify-between">
-                <h2 className="font-serif text-2xl md:text-3xl font-bold">Recommendations</h2>
+                <h2 className="font-serif text-2xl md:text-3xl font-bold">Recent Swaps</h2>
                 <Button variant="link" className="text-[10px] md:text-sm uppercase tracking-widest text-black hover:text-gray-500 p-0" onClick={() => navigate('/create-swap')}>
-                  View All <ArrowUpRight className="w-3 h-3 md:w-4 md:h-4 ml-1" />
+                  Find Partners <ArrowUpRight className="w-3 h-3 md:w-4 md:h-4 ml-1" />
                 </Button>
               </div>
 
               <div className="grid gap-4 md:gap-6">
-                {recommendedSwaps.map((swap, index) => (
-                  <motion.div
-                    key={swap.name}
-                    variants={itemVariants}
-                    className="group relative bg-gray-50 p-6 md:p-8 hover:bg-black hover:text-white transition-all duration-500"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-200 text-black flex items-center justify-center font-serif text-base md:text-lg">
-                          {swap.avatar}
-                        </div>
-                        <div>
-                          <h3 className="font-serif text-lg md:text-xl font-bold mb-1">{swap.name}</h3>
-                          <div className="text-[10px] md:text-xs uppercase tracking-widest opacity-60 leading-relaxed">
-                            Teaches {swap.teaches} <br className="sm:hidden" />
-                            <span className="hidden sm:inline"> • </span> Wants {swap.wants}
+                {recentSwaps.length === 0 ? (
+                  <div className="text-gray-400 text-sm border border-dashed border-gray-200 p-12 text-center italic leading-relaxed">
+                    No recent swaps. Start matching and learning together!
+                  </div>
+                ) : (
+                  recentSwaps.map((swap) => {
+                    const initials = (swap.partnerName || "").split(" ").map(w => w[0]).filter(Boolean).join("").toUpperCase().slice(0, 2) || "??";
+                    const isTeacher = swap.role === 'TEACHER';
+                    
+                    return (
+                      <motion.div
+                        key={swap.sessionId}
+                        variants={itemVariants}
+                        className="group relative bg-gray-50 p-6 md:p-8 hover:bg-black hover:text-white transition-all duration-500"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gray-200 text-black flex items-center justify-center font-serif text-base md:text-lg">
+                              {initials}
+                            </div>
+                            <div>
+                              <h3 className="font-serif text-lg md:text-xl font-bold mb-1">{swap.partnerName}</h3>
+                              <div className="text-[10px] md:text-xs uppercase tracking-widest opacity-60 leading-relaxed">
+                                {isTeacher ? `Taught them ${swap.skillName}` : `Learned ${swap.skillName} from them`}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start">
+                            <div className="text-[10px] opacity-50">{new Date(swap.createdAt).toLocaleDateString()}</div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start">
-                        <div className="flex items-center gap-1 sm:justify-end mb-1">
-                          <Star className="w-3 h-3 md:w-4 md:h-4 fill-current" />
-                          <span className="font-mono text-xs md:text-sm">{swap.rating}</span>
-                        </div>
-                        <div className="text-[10px] opacity-50">{swap.available}</div>
-                      </div>
-                    </div>
 
-                    <div className="mt-6 sm:mt-0 sm:absolute sm:bottom-8 sm:right-8 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-500 sm:translate-x-4 sm:group-hover:translate-x-0">
-                      <Button className="w-full sm:w-auto bg-black text-white group-hover:bg-white group-hover:text-black hover:bg-gray-200 rounded-none px-6 h-10 text-[10px] uppercase tracking-widest">
-                        Request Swap
-                      </Button>
-                    </div>
-                  </motion.div>
-                ))}
+                        <div className="mt-6 sm:mt-0 sm:absolute sm:bottom-8 sm:right-8 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-500 sm:translate-x-4 sm:group-hover:translate-x-0">
+                          <Button
+                            onClick={() => navigate('/swaps', { state: { selectPartnerId: swap.partnerId } })}
+                            className="w-full sm:w-auto bg-black text-white group-hover:bg-white group-hover:text-black hover:bg-gray-200 rounded-none px-6 h-10 text-[10px] uppercase tracking-widest"
+                          >
+                            Message
+                          </Button>
+                        </div>
+                      </motion.div>
+                    );
+                  })
+                )}
               </div>
             </motion.div>
 
@@ -335,7 +368,7 @@ const Dashboard = () => {
                               Join Room
                             </Button>
                             <Button
-                              onClick={() => navigate('/messages')}
+                              onClick={() => navigate('/swaps')}
                               className="h-8 md:h-7 text-[9px] md:text-[10px] uppercase tracking-[0.2em] rounded-none bg-black text-white hover:bg-gray-800 px-4"
                             >
                               Message
@@ -368,6 +401,47 @@ const Dashboard = () => {
                     <Calendar className="w-5 h-5 md:w-6 md:h-6" />
                     <span className="text-[9px] md:text-xs uppercase tracking-[0.2em] text-center leading-tight">Class <br /> Schedule</span>
                   </Button>
+                </div>
+              </div>
+
+              {/* Recent Feedback */}
+              <div className="space-y-6">
+                <h2 className="font-serif text-xl md:text-2xl font-bold border-b border-black/10 pb-4 italic tracking-tight flex items-center justify-between">
+                  Recent Feedback
+                  {feedbacks.length > 0 && (
+                    <span className="text-[10px] bg-black text-white px-2 py-0.5 rounded-full font-sans tracking-widest normal-case">{feedbacks.length}</span>
+                  )}
+                </h2>
+                <div className="space-y-4 px-1">
+                  {feedbacks.length === 0 ? (
+                    <div className="text-gray-400 text-xs border border-dashed border-gray-200 p-8 text-center italic leading-relaxed">
+                      No reviews yet. <br /> Complete sessions to get feedback!
+                    </div>
+                  ) : (
+                    feedbacks.slice(0, 3).map((f) => (
+                      <div key={f.id} className="p-4 bg-gray-50 border border-gray-100 hover:border-black/20 hover:bg-white transition-all space-y-2 group">
+                        <div className="flex justify-between items-center">
+                          <div className="font-bold text-sm truncate pr-2">{f.reviewerName}</div>
+                          <div className="flex items-center gap-0.5 text-yellow-500 shrink-0">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-3 h-3 ${i < f.rating ? 'fill-current text-yellow-500' : 'text-gray-200'}`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {f.comments && (
+                          <p className="text-xs text-gray-600 italic leading-relaxed group-hover:text-black transition-colors line-clamp-2">
+                            "{f.comments}"
+                          </p>
+                        )}
+                        <div className="text-[9px] uppercase tracking-widest text-gray-400 font-mono">
+                          {new Date(f.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </motion.div>

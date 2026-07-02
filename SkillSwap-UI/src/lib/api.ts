@@ -277,6 +277,21 @@ export const notificationApi = {
   markRead: (id: number) => api.put(`/notifications/${id}/read`).then((res) => res.data),
 };
 
+export interface FeedbackResponse {
+  id: number;
+  sessionId: number;
+  reviewerName: string;
+  rating: number;
+  comments: string;
+  dimensions: string;
+  createdAt: string;
+}
+
+export const feedbackApi = {
+  getMyFeedback: (): Promise<FeedbackResponse[]> => api.get("/feedback/my-feedback").then((res) => res.data),
+};
+
+
 export const getErrorMessage = (error: any): string => {
   if (!error) return "An unexpected error occurred.";
   

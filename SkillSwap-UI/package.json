@@ -9,10 +9,12 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "start": "serve -s dist",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
+    "serve": "^14.2.4",
     "@hookform/resolvers": "^3.10.0",
     "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-accordion": "^1.2.12",

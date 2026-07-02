@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MainLayout from "@/components/layout/MainLayout";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Send, Search, ArrowLeft, Video, ChevronRight,
@@ -63,6 +63,7 @@ const initials = (name: string) => (name || "").split(" ").map(w => w[0]).filter
 // ─── Main Component ───────────────────────────────────────────────────────────
 const Messages = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selected, setSelected] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -74,8 +75,18 @@ const Messages = () => {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    loadConversations();
-  }, []);
+    const init = async () => {
+      const convs = await loadConversations();
+      const state = location.state as { selectPartnerId?: number } | null;
+      if (state?.selectPartnerId && convs) {
+        const found = convs.find((c: Conversation) => c.partnerId === state.selectPartnerId);
+        if (found) {
+          setSelected(found);
+        }
+      }
+    };
+    init();
+  }, [location.state]);
 
   useEffect(() => {
     if (selected) {
@@ -94,8 +105,13 @@ const Messages = () => {
     setLoading(true);
     try {
       const data = await msgApi.getConversations();
-      setConversations(Array.isArray(data) ? data : []);
-    } catch { toast.error("Failed to load conversations"); }
+      const list = Array.isArray(data) ? data : [];
+      setConversations(list);
+      return list;
+    } catch { 
+      toast.error("Failed to load conversations"); 
+      return [];
+    }
     finally { setLoading(false); }
   };
 
