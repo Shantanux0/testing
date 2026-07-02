@@ -82,6 +82,8 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of(
                 "https://testing-lovat-delta.vercel.app",
+                "https://*.up.railway.app",
+                "https://*.railway.app",
                 "http://localhost:[*]",
                 "http://127.0.0.1:[*]",
                 "http://192.168.*:[*]",
